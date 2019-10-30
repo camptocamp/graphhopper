@@ -4,6 +4,8 @@ target/
 *.osm
 nbactions*.xml
 /config.yml
+config.properties
+!.circleci/config.yml
 build.xml
 queries.sh
 maven/
