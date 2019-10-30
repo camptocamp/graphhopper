@@ -17,6 +17,7 @@
  */
 package com.graphhopper.routing.util;
 
+import com.graphhopper.routing.util.SchmFlagEncoder;
 import com.graphhopper.reader.ReaderRelation;
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.routing.profiles.EncodedValue;
@@ -24,13 +25,17 @@ import com.graphhopper.routing.profiles.UnsignedDecimalEncodedValue;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.PMap;
 
-import java.util.*;
 
 /**
  * @author Guillaume Beraudo
  */
 public class SchmWanderFlagEncoder extends SchmFlagEncoder {
-    @override
+
+    public SchmWanderFlagEncoder(PMap properties) {
+        super(properties);
+    }
+
+    @Override
     protected double getSpeed(ReaderWay way) {
         String land = way.getTag("land") ;
         if ("wander".equals(land)) {
