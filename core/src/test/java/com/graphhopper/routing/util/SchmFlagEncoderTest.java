@@ -42,12 +42,17 @@ import static org.junit.Assert.*;
 public class SchmFlagEncoderTest {
     private final EncodingManager em = EncodingManager.create(Arrays.asList(
             new SchmWanderFlagEncoder(new PMap("speed_two_directions=false")),
+            new SchmVeloFlagEncoder(new PMap("speed_two_directions=false")),
+            new SchmSkatingFlagEncoder(new PMap("speed_two_directions=false")),
+            new SchmMtbFlagEncoder(new PMap("speed_two_directions=false")),
+            new SchmNeutralFlagEncoder(new PMap("speed_two_directions=false")),
+            new SchmAllFlagEncoder(new PMap("speed_two_directions=false")),
             new BikeFlagEncoder(), new FootFlagEncoder()
     ), 8);
 
     @Test
     public void testAccess() {
-        SchmWanderFlagEncoder encoder = (SchmWanderFlagEncoder) em.getEncoder("schmwander");
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmwander");
         ReaderWay way = new ReaderWay(1);
         assertTrue(encoder.getAccess(way).isWay());
         way.setTag("highway", "residential");
@@ -57,7 +62,7 @@ public class SchmFlagEncoderTest {
 
     @Test
     public void testWanderSpeed() {
-        SchmWanderFlagEncoder encoder = (SchmWanderFlagEncoder) em.getEncoder("schmwander");
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmwander");
         ReaderWay way = new ReaderWay(1);
         way.setTag("highway", "residential");
         assertEquals(1, encoder.getSpeed(way), 1e-1);
@@ -74,4 +79,78 @@ public class SchmFlagEncoderTest {
         assertEquals(3, encoder.getSpeed(way), 1e-1);
     }
 
+    @Test
+    public void testAllSpeed() {
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmall");
+        ReaderWay way = new ReaderWay(1);
+        way.setTag("highway", "residential");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "wander");
+        assertEquals(10, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "tlm");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("ww", "1");
+        assertEquals(3, encoder.getSpeed(way), 1e-1);
+    }
+
+
+    @Test
+    public void testVeloSpeed() {
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmvelo");
+        ReaderWay way = new ReaderWay(1);
+        way.setTag("highway", "residential");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "velo");
+        assertEquals(10, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "tlm");
+
+        way.setTag("objektart", "6m Strasse");
+        assertEquals(3, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("objektart", "other");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+    }
+
+    @Test
+    public void testNeutralSpeed() {
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmneutral");
+        ReaderWay way = new ReaderWay(1);
+        way.setTag("highway", "residential");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "velo");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "tlm");
+
+        way.setTag("objektart", "6m Strasse");
+        assertEquals(10, encoder.getSpeed(way), 1e-1);
+    }
+
+    @Test
+    public void testSkatingSpeed() {
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmskating");
+        ReaderWay way = new ReaderWay(1);
+        way.setTag("highway", "residential");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "skating");
+        assertEquals(10, encoder.getSpeed(way), 1e-1);
+    }
+
+    @Test
+    public void testMtbSpeed() {
+        SchmFlagEncoder encoder = (SchmFlagEncoder) em.getEncoder("schmmtb");
+        ReaderWay way = new ReaderWay(1);
+        way.setTag("highway", "residential");
+        assertEquals(1, encoder.getSpeed(way), 1e-1);
+
+        way.setTag("land", "mtb");
+        assertEquals(10, encoder.getSpeed(way), 1e-1);
+    }
 }

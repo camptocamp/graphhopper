@@ -17,28 +17,30 @@
  */
 package com.graphhopper.routing.util;
 
+import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.util.PMap;
 
-/**
- * @author Peter Karich
- */
-public interface FlagEncoderFactory {
-    String CAR = "car";
-    String CAR4WD = "car4wd";
-    String BIKE = "bike";
-    String BIKE2 = "bike2";
-    String RACINGBIKE = "racingbike";
-    String MOUNTAINBIKE = "mtb";
-    String FOOT = "foot";
-    String HIKE = "hike";
-    String MOTORCYCLE = "motorcycle";
-    String GENERIC = "generic";
-    String SCHMWANDER = "schmwander";
-    String SCHMVELO = "schmvelo";
-    String SCHMSKATING = "schmskating";
-    String SCHMNEUTRAL = "schmneutral";
-    String SCHMMTB = "schmmtb";
-    String SCHMALL = "schmall";
 
-    FlagEncoder createFlagEncoder(String name, PMap configuration);
+/**
+ * @author Guillaume Beraudo
+ */
+public class SchmSkatingFlagEncoder extends SchmFlagEncoder {
+
+    public SchmSkatingFlagEncoder(PMap properties) {
+        super(properties);
+    }
+
+    @Override
+    protected double getSpeed(ReaderWay way) {
+        String land = way.getTag("land") ;
+        if ("skating".equals(land)) {
+            return 10;
+        }
+        return 1;
+    }
+
+    @Override
+    public String toString() {
+        return "schmskating";
+    }
 }
