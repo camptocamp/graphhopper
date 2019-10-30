@@ -61,6 +61,26 @@ public class DefaultFlagEncoderFactory implements FlagEncoderFactory {
             return new SchmWanderFlagEncoder(configuration);
         }
 
+        if (name.equals(SCHMVELO)) {
+            return new SchmVeloFlagEncoder(configuration);
+        }
+
+        if (name.equals(SCHMNEUTRAL)) {
+            return new SchmNeutralFlagEncoder(configuration);
+        }
+
+        if (name.equals(SCHMSKATING)) {
+            return new SchmSkatingFlagEncoder(configuration);
+        }
+
+        if (name.equals(SCHMMTB)) {
+            return new SchmMtbFlagEncoder(configuration);
+        }
+
+        if (name.equals(SCHMALL)) {
+            return new SchmAllFlagEncoder(configuration);
+        }
+
         throw new IllegalArgumentException("entry in encoder list not supported " + name);
     }
 }

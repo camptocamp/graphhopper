@@ -24,31 +24,28 @@ import com.graphhopper.util.PMap;
 /**
  * @author Guillaume Beraudo
  */
-public class SchmWanderFlagEncoder extends SchmFlagEncoder {
+public class SchmNeutralFlagEncoder extends SchmFlagEncoder {
 
-    public SchmWanderFlagEncoder(PMap properties) {
+    public SchmNeutralFlagEncoder(PMap properties) {
         super(properties);
     }
 
     @Override
     protected double getSpeed(ReaderWay way) {
         String land = way.getTag("land") ;
-        if ("wander".equals(land)) {
-            return 10;
-        }
         if ("tlm".equals(land)) {
-            String wwString = way.getTag("ww");
-            if ("1".equals(wwString)) {
-                return 8;
-            }
             String rtype = way.getTag("objektart");
-            if (rtype.equals("4m Strasse")
+            if (
+                    rtype.equals("10m Strasse")
+                    || rtype.equals("8m Strasse")
+                    || rtype.equals("6m Strasse")
+                    || rtype.equals("4m Strasse")
                     || rtype.equals("3m Strasse")
                     || rtype.equals("1m Weg")
                     || rtype.equals("1m Wegfragment")
                     || rtype.equals("2m Weg")
                     || rtype.equals("2m Wegfragment")) {
-                return 3;
+                return 10;
             }
         }
         return 1;
@@ -56,6 +53,6 @@ public class SchmWanderFlagEncoder extends SchmFlagEncoder {
 
     @Override
     public String toString() {
-        return "schmwander";
+        return "schmneutral";
     }
 }
