@@ -27,28 +27,27 @@ import com.graphhopper.util.PMap;
 import java.util.*;
 
 /**
- * Defines bit layout for cars. (speed, access, ferries, ...)
+ * See https://github.com/graphhopper/graphhopper/blob/master/docs/core/create-new-flagencoder.md
  *
- * @author Peter Karich
- * @author Nop
+ * @author Guillaume Beraudo
  */
-public class SchmWanderFlagEncoder extends AbstractFlagEncoder {
-    public SchmWanderFlagEncoder() {
+public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
+    public SchmFlagEncoder() {
         this(4, 1, 0);
     }
 
-    public SchmWanderFlagEncoder(PMap properties) {
+    public SchmFlagEncoder(PMap properties) {
         // Speed up to 16km/h
         // No turn restriction
         this(4, 1 ,0);
         this.properties = properties;
     }
 
-    public SchmWanderFlagEncoder(String propertiesStr) {
+    public SchmFlagEncoder(String propertiesStr) {
         this(new PMap(propertiesStr));
     }
 
-    public SchmWanderFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
+    public SchmFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
         super(speedBits, speedFactor, maxTurnCosts);
         speedDefault = 1;
         init();
@@ -71,8 +70,7 @@ public class SchmWanderFlagEncoder extends AbstractFlagEncoder {
         );
     }
 
-    protected abstract double getSpeed(ReaderWay way) {
-    }
+    protected abstract double getSpeed(ReaderWay way);
 
     @Override
     public EncodingManager.Access getAccess(ReaderWay way) {
