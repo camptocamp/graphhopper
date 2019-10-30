@@ -57,6 +57,10 @@ public class DefaultFlagEncoderFactory implements FlagEncoderFactory {
         if (name.equals(MOTORCYCLE))
             return new MotorcycleFlagEncoder(configuration);
 
+        if (name.equals(SCHMWANDERWANDER)) {
+            return new SchmWanderFlagEncoder(configuration);
+        }
+
         throw new IllegalArgumentException("entry in encoder list not supported " + name);
     }
 }
