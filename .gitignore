@@ -6,6 +6,7 @@ TODO.txt
 nbactions*.xml
 config.properties
 config.yml
+!.circleci/config.yml
 build.xml
 queries.sh
 maven/
