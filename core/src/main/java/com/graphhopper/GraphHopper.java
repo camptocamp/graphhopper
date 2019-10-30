@@ -564,6 +564,8 @@ public class GraphHopper implements GraphHopperAPI {
             tmpProvider = new SRTMGL1Provider(cacheDirStr);
         } else if (eleProviderStr.equalsIgnoreCase("multi")) {
             tmpProvider = new MultiSourceElevationProvider(cacheDirStr);
+        } else if (eleProviderStr.equalsIgnoreCase("osmnode")) {
+            tmpProvider = new OSMNodeElevationProvider();
         }
 
         tmpProvider.setAutoRemoveTemporaryFiles(removeTempElevationFiles);

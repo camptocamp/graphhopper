@@ -22,6 +22,7 @@ import com.graphhopper.coll.*;
 import com.graphhopper.coll.LongIntMap;
 import com.graphhopper.reader.*;
 import com.graphhopper.reader.dem.ElevationProvider;
+import com.graphhopper.reader.dem.OSMNodeElevationProvider;
 import com.graphhopper.reader.dem.GraphElevationSmoothing;
 import com.graphhopper.reader.osm.OSMTurnRelation.TurnCostTableEntry;
 import com.graphhopper.routing.profiles.BooleanEncodedValue;
@@ -557,6 +558,9 @@ public class OSMReader implements DataReader {
     }
 
     protected double getElevation(ReaderNode node) {
+        if (eleProvider instanceof OSMNodeElevationProvider) {
+            return node.getEle();
+        }
         return eleProvider.getEle(node.getLat(), node.getLon());
     }
 
