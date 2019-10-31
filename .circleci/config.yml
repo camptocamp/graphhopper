@@ -31,16 +31,16 @@ workflows:
     jobs:
       - build
 
-  tag_push_workflow:
+  publish_workflow:
     jobs:
       - dockerhub:
           filters:
             tags:
               only: /^release\/\d+\.\d+\.\d+/
             branches:
-              ignore: /.*/
+              ignore: /^release_\d+/
 
-  nightly_workflow:
+  nightly_publish_workflow:
     triggers:
       - schedule:
           cron: 0 0 * * *
