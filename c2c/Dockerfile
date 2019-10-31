@@ -13,6 +13,9 @@ COPY . /graphhopper/
 
 WORKDIR /graphhopper
 
+# Disable maven progress bar
+ENV MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
+
 RUN ./graphhopper.sh build
 
 EXPOSE 8989
