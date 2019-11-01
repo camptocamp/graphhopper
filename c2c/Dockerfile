@@ -2,7 +2,7 @@ FROM debian:buster-slim
 
 RUN apt-get update \
   && mkdir /usr/share/man/man1 \
-  && apt-get install -y --no-install-recommends unzip wget maven openjdk-11-jdk-headless openjdk-11-jre-headless \
+  && apt-get install -y --no-install-recommends unzip wget curl maven openjdk-11-jdk-headless openjdk-11-jre-headless \
   && apt-get clean \
   && rm -rf /usr/share/man/man1 \
   && rm -rf /var/lib/apt/lists/*
