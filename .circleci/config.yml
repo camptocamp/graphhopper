@@ -38,7 +38,7 @@ workflows:
             tags:
               only: /^release\/\d+\.\d+\.\d+/
             branches:
-              ignore: /^release_\d+/
+              only: /^release_\d+/
 
   nightly_publish_workflow:
     triggers:
