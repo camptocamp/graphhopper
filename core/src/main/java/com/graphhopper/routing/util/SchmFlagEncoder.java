@@ -87,6 +87,7 @@ public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
         double speed = getSpeed(way);
         speedEncoder.setDecimal(false, edgeFlags, speed);
         accessEnc.setBool(false, edgeFlags, true);
+        accessEnc.setBool(true, edgeFlags, true);
         return edgeFlags;
     }
 
