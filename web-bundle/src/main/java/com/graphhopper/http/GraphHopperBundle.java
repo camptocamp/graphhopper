@@ -52,7 +52,12 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GraphHopperBundle implements ConfiguredBundle<GraphHopperBundleConfiguration> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphHopperBundle.class);
 
     static class TranslationMapFactory implements Factory<TranslationMap> {
 
@@ -207,6 +212,7 @@ public class GraphHopperBundle implements ConfiguredBundle<GraphHopperBundleConf
                 throw new IllegalArgumentException("You need to prefix system parameters with '-Ddw.graphhopper.' instead of '-Dgraphhopper.' see #1879 and #1897");
         }
 
+        LOGGER.info("Running C2C custom version of Graphhopper bundle");
         // When Dropwizard's Hibernate Validation misvalidates a query parameter,
         // a JerseyViolationException is thrown.
         // With this mapper, we use our custom format for that (backwards compatibility),
