@@ -17,6 +17,7 @@
     </parent>
     <properties>
         <jetty.version>9.4.2.v20170220</jetty.version>
+        <dropwizard.version>2.0.8</dropwizard.version>
     </properties>
 
     <dependencies>
