@@ -19,10 +19,10 @@ package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderNode;
 import com.graphhopper.reader.ReaderWay;
-import com.graphhopper.routing.profiles.BooleanEncodedValue;
-import com.graphhopper.routing.profiles.DecimalEncodedValue;
-import com.graphhopper.routing.profiles.EncodedValue;
-import com.graphhopper.routing.profiles.Roundabout;
+import com.graphhopper.routing.ev.BooleanEncodedValue;
+import com.graphhopper.routing.ev.DecimalEncodedValue;
+import com.graphhopper.routing.ev.EncodedValue;
+import com.graphhopper.routing.ev.Roundabout;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.PMap;
@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @author Guillaume Beraudo
  */
 public class SchmFlagEncoderTest {
-    private final EncodingManager em = EncodingManager.create(Arrays.asList(
+    private final EncodingManager em = EncodingManager.create(
             new SchmWanderFlagEncoder(new PMap("speed_two_directions=false")),
             new SchmVeloFlagEncoder(new PMap("speed_two_directions=false")),
             new SchmSkatingFlagEncoder(new PMap("speed_two_directions=false")),
@@ -48,7 +48,7 @@ public class SchmFlagEncoderTest {
             new SchmNeutralFlagEncoder(new PMap("speed_two_directions=false")),
             new SchmAllFlagEncoder(new PMap("speed_two_directions=false")),
             new BikeFlagEncoder(), new FootFlagEncoder()
-    ), 8);
+    );
 
     @Test
     public void testAccess() {

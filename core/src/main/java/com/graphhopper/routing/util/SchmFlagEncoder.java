@@ -19,8 +19,8 @@ package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderRelation;
 import com.graphhopper.reader.ReaderWay;
-import com.graphhopper.routing.profiles.EncodedValue;
-import com.graphhopper.routing.profiles.UnsignedDecimalEncodedValue;
+import com.graphhopper.routing.ev.EncodedValue;
+import com.graphhopper.routing.ev.UnsignedDecimalEncodedValue;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.PMap;
 
@@ -37,10 +37,7 @@ public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
     }
 
     public SchmFlagEncoder(PMap properties) {
-        // Speed up to 16km/h
-        // No turn restriction
         this(4, 1 ,0);
-        this.properties = properties;
     }
 
     public SchmFlagEncoder(String propertiesStr) {
@@ -50,7 +47,6 @@ public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
     public SchmFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
         super(speedBits, speedFactor, maxTurnCosts);
         speedDefault = 1;
-        init();
     }
 
     @Override
@@ -65,7 +61,7 @@ public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
     public void createEncodedValues(List<EncodedValue> registerNewEncodedValue, String prefix, int index) {
         // first two bits are reserved for route handling in superclass
         super.createEncodedValues(registerNewEncodedValue, prefix, index);
-        registerNewEncodedValue.add(speedEncoder = new UnsignedDecimalEncodedValue(
+        registerNewEncodedValue.add(avgSpeedEnc = new UnsignedDecimalEncodedValue(
                 EncodingManager.getKey(prefix, "average_speed"), speedBits, speedFactor, false)
         );
     }
@@ -78,14 +74,9 @@ public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
     }
 
     @Override
-    public long handleRelationTags(long oldRelationFlags, ReaderRelation relation) {
-        return oldRelationFlags;
-    }
-
-    @Override
-    public IntsRef handleWayTags(IntsRef edgeFlags, ReaderWay way, EncodingManager.Access accept, long relationFlags) {
+    public IntsRef handleWayTags(IntsRef edgeFlags, ReaderWay way, EncodingManager.Access accept) {
         double speed = getSpeed(way);
-        speedEncoder.setDecimal(false, edgeFlags, speed);
+        avgSpeedEnc.setDecimal(false, edgeFlags, speed);
         accessEnc.setBool(false, edgeFlags, true);
         accessEnc.setBool(true, edgeFlags, true);
         return edgeFlags;

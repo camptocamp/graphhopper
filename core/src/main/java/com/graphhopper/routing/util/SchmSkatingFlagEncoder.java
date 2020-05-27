@@ -18,6 +18,7 @@
 package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderWay;
+import com.graphhopper.routing.util.spatialrules.TransportationMode;
 import com.graphhopper.util.PMap;
 
 
@@ -42,5 +43,10 @@ public class SchmSkatingFlagEncoder extends SchmFlagEncoder {
     @Override
     public String toString() {
         return "schmskating";
+    }
+
+    @Override
+    public TransportationMode getTransportationMode() {
+        return TransportationMode.FOOT;
     }
 }

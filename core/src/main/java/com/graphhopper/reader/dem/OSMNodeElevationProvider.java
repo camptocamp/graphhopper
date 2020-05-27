@@ -37,7 +37,8 @@ public class OSMNodeElevationProvider implements ElevationProvider {
   }
 
   @Override
-  public void setCalcMean(boolean calcMean) {
+  public void setInterpolate(boolean interpolate) {
+
   }
 
   @Override

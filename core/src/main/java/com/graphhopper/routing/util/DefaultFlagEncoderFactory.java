@@ -57,7 +57,7 @@ public class DefaultFlagEncoderFactory implements FlagEncoderFactory {
         if (name.equals(WHEELCHAIR))
             return new WheelchairFlagEncoder(configuration);
 
-        if (name.equals(SCHMWANDERWANDER)) {
+        if (name.equals(SCHMWANDER)) {
             return new SchmWanderFlagEncoder(configuration);
         }
 
