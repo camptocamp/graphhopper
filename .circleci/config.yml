@@ -38,7 +38,7 @@ workflows:
             tags:
               only: /^release\/\d+\.\d+\.\d+/
             branches:
-              only: /^release_\d+/
+              only: /^release_/
 
   nightly_publish_workflow:
     triggers:
@@ -46,6 +46,6 @@ workflows:
           cron: 0 0 * * *
           filters:
             branches:
-              only: /^release_\d+/
+              only: /^release_/
     jobs:
       - dockerhub
