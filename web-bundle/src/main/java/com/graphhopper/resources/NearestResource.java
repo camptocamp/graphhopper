@@ -70,7 +70,9 @@ public class NearestResource {
             double[] coordinates = hasElevation && elevation ? new double[]{snappedPoint.lon, snappedPoint.lat, snappedPoint.ele} : new double[]{snappedPoint.lon, snappedPoint.lat};
             return new Response(coordinates, calc.calcDist(point.lat, point.lon, snappedPoint.lat, snappedPoint.lon));
         } else {
-            throw new WebApplicationException("Nearest point cannot be found!");
+            // We always want a reply, eventually the same as the input
+            double[] coordinates = hasElevation && elevation ? new double[]{point.lon, point.lat, -1} : new double[]{point.lon, point.lat};
+            return new Response(coordinates, -1);
         }
     }
 
