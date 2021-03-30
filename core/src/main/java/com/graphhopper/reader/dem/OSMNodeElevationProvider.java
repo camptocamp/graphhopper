@@ -37,6 +37,11 @@ public class OSMNodeElevationProvider implements ElevationProvider {
   }
 
   @Override
+  public boolean getInterpolate() {
+      return false;
+  }
+
+  @Override
   public void setInterpolate(boolean interpolate) {
 
   }
