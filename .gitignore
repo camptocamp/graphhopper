@@ -7,7 +7,6 @@ nbactions*.xml
 config.properties
 !.circleci/config.yml
 build.xml
-queries.sh
 maven/
 measurement*.properties
 gen/
@@ -18,8 +17,6 @@ android/libs/graphhopper-*-android.jar
 .idea
 .idea/
 *iml
-debug.sh
-/web/src/main/resources/assets/js/main.js
 /web/src/main/resources/assets/js/config/options_prod.js
 /web/dependency-reduced-pom.xml
 /web/node
@@ -30,13 +27,13 @@ debug.sh
 srtmprovider/
 cgiarprovider/
 .*#
-/nbactions.xml
 android/build/
 android/app/build/
 android/.gradle
 .settings/
 .classpath
 .project
+local/
 local.properties
 **/node_modules
 *.zip
