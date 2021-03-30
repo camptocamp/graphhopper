@@ -3,29 +3,16 @@
 NAME="camptocamp/graphhopper"
 
 function publish {
-    local version=$1
-    docker_version=`echo "${version}" | sed -e 's/^release\///' | sed -e 's/\//_/g'`
-
-    echo "Deploying image to docker hub for tag ${docker_version}"
-    docker tag "${NAME}:latest" "${NAME}:${docker_version}"
-    docker push "${NAME}:${docker_version}"
+    local TAG=$1
+    echo "Deploying image to docker hub for tag ${TAG}"
+    docker tag "${NAME}:latest" "${NAME}:${TAG}"
+    docker push "${NAME}:${TAG}"
 }
 
-if [ ! -z "${CIRCLE_PULL_REQUEST}" ]
+TAG=$1
+if [ ! -z "${TAG}" ]
 then
-    echo "Not deploying image for pull requests"
-    exit 0
-fi
-
-if [ "${CIRCLE_BRANCH}" == "c2c" ]
-then
-  publish latest
-elif [ ! -z "${CIRCLE_TAG}" ]
-then
-  publish "${CIRCLE_TAG}"
-elif [ ! -z "${CIRCLE_BRANCH}" ]
-then
-  publish "${CIRCLE_BRANCH}"
+  publish "${TAG}"
 else
-  echo "Not deploying image"
+  echo "Not deploying image, pass tag as parameter"
 fi

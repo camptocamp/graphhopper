@@ -11,4 +11,30 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - run: echo ${{github.ref}}
+      - run: docker system prune --all --force
+
+      - uses: actions/checkout@v2
+
+      - name: Pull docker images
+        env:
+          DOCKERHUB_USERNAME: ${{secrets.DOCKERHUB_USERNAME}}
+          DOCKERHUB_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
+        run: |
+          docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+
+      - name: Build
+        run: |
+          c2c/dockerbuild.sh
+      - name: Publish docker images
+        run: |
+          if [[ ${{github.ref}} =~ ^refs/heads/(camptocamp_.*)$ ]]
+          then
+            DOCKER_TAG="${BASH_REMATCH[1]}"
+            c2c/publish.sh ${DOCKER_TAG}
+          elif [[ ${{github.ref}} =~ ^refs/heads/(release_.*)$ ]]
+          then
+            DOCKER_TAG="${BASH_REMATCH[1]}"
+            c2c/publish.sh ${DOCKER_TAG}
+          else
+            echo "No release to do for ${{github.ref}}"
+          fi

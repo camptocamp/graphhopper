@@ -17,6 +17,7 @@ WORKDIR /graphhopper
 ENV MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
 
 RUN ./graphhopper.sh build
+RUN mvn test -Dtest=SchmFlagEncoderTest#test* -DfailIfNoTests=false
 
 EXPOSE 8989
 
