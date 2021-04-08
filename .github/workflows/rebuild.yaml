@@ -1,0 +1,47 @@
+name: Rebuild
+
+on:
+  schedule:
+    # once a week on Monday morning
+    - cron: "30 2 * * 1"
+
+env:
+  IN_CI: '1'
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - release_2.3
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.branch }}
+
+      - run: docker system prune --all --force
+
+      - name: Pull docker images
+        env:
+          DOCKERHUB_USERNAME: ${{secrets.DOCKERHUB_USERNAME}}
+          DOCKERHUB_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
+        run: |
+          docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+
+      - name: Build
+        run: |
+          c2c/dockerbuild.sh
+      - name: Publish docker images
+        run: |
+          if [[ ${{github.ref}} =~ ^refs/heads/(release_.*)$ ]]
+          then
+            DOCKER_TAG="${BASH_REMATCH[1]}"
+            c2c/publish.sh ${DOCKER_TAG}
+          else
+            echo "No release to do for ${{github.ref}}"
+          fi
