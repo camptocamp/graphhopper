@@ -19,7 +19,6 @@ package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.routing.ev.*;
-import com.graphhopper.routing.util.spatialrules.TransportationMode;
 import com.graphhopper.routing.weighting.PriorityWeighting;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.Helper;
@@ -61,8 +60,6 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
 
     protected BikeCommonFlagEncoder(int speedBits, double speedFactor, int maxTurnCosts) {
         super(speedBits, speedFactor, maxTurnCosts);
-        // strict set, usually vehicle and agricultural/forestry are ignored by cyclists
-        restrictions.addAll(Arrays.asList("bicycle", "vehicle", "access"));
 
         restrictedValues.add("no");
         restrictedValues.add("restricted");
@@ -84,6 +81,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         // potentialBarriers.add("lift_gate");
         potentialBarriers.add("swing_gate");
         potentialBarriers.add("cattle_grid");
+        potentialBarriers.add("chain");
 
         absoluteBarriers.add("fence");
         absoluteBarriers.add("stile");
@@ -180,13 +178,12 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         routeMap.put(REGIONAL, VERY_NICE.getValue());
         routeMap.put(LOCAL, PREFER.getValue());
 
-        speedDefault = highwaySpeeds.get("cycleway");
         setAvoidSpeedLimit(71);
     }
 
     @Override
     public TransportationMode getTransportationMode() {
-        return TransportationMode.BICYCLE;
+        return TransportationMode.BIKE;
     }
 
     @Override
@@ -309,7 +306,7 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
             wayTypeSpeed = applyMaxSpeed(way, wayTypeSpeed);
             handleSpeed(edgeFlags, way, wayTypeSpeed);
         } else {
-            double ferrySpeed = getFerrySpeed(way);
+            double ferrySpeed = ferrySpeedCalc.getSpeed(way);
             handleSpeed(edgeFlags, way, ferrySpeed);
             accessEnc.setBool(false, edgeFlags, true);
             accessEnc.setBool(true, edgeFlags, true);
@@ -515,26 +512,27 @@ abstract public class BikeCommonFlagEncoder extends AbstractFlagEncoder {
         avgSpeedEnc.setDecimal(false, edgeFlags, speed);
 
         // handle oneways
-        boolean isOneway = way.hasTag("oneway", oneways)
+        // oneway=-1 requires special handling
+        boolean isOneway = (way.hasTag("oneway", oneways) && !way.hasTag("oneway", "-1") && !way.hasTag("bicycle:backward", intendedValues))
+                || (way.hasTag("oneway", "-1") && !way.hasTag("bicycle:forward", intendedValues))
                 || way.hasTag("oneway:bicycle", oneways)
-                || way.hasTag("vehicle:backward")
-                || way.hasTag("vehicle:forward")
-                || way.hasTag("bicycle:forward") && (way.hasTag("bicycle:forward", "yes") || way.hasTag("bicycle:forward", "no"));
+                || (way.hasTag("vehicle:backward", restrictedValues) && !way.hasTag("bicycle:forward", intendedValues))
+                || (way.hasTag("vehicle:forward", restrictedValues) && !way.hasTag("bicycle:backward", intendedValues))
+                || way.hasTag("bicycle:forward", restrictedValues)
+                || way.hasTag("bicycle:backward", restrictedValues);
 
         if ((isOneway || roundaboutEnc.getBool(false, edgeFlags))
                 && !way.hasTag("oneway:bicycle", "no")
-                && !way.hasTag("bicycle:backward")
                 && !way.hasTag("cycleway", oppositeLanes)
                 && !way.hasTag("cycleway:left", oppositeLanes)
-                && !way.hasTag("cycleway:right", oppositeLanes)) {
+                && !way.hasTag("cycleway:right", oppositeLanes)
+                && !way.hasTag("cycleway:left:oneway", "-1")
+                && !way.hasTag("cycleway:right:oneway", "-1")) {
             boolean isBackward = way.hasTag("oneway", "-1")
                     || way.hasTag("oneway:bicycle", "-1")
-                    || way.hasTag("vehicle:forward", "no")
-                    || way.hasTag("bicycle:forward", "no");
-            if (isBackward)
-                accessEnc.setBool(true, edgeFlags, true);
-            else
-                accessEnc.setBool(false, edgeFlags, true);
+                    || way.hasTag("vehicle:forward", restrictedValues)
+                    || way.hasTag("bicycle:forward", restrictedValues);
+            accessEnc.setBool(isBackward, edgeFlags, true);
 
         } else {
             accessEnc.setBool(false, edgeFlags, true);

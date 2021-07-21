@@ -38,6 +38,7 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.storage.TurnCostStorage;
 import com.graphhopper.util.EdgeExplorer;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.util.GHUtility;
 import com.graphhopper.util.PointList;
 import com.graphhopper.util.shapes.BBox;
 import org.mapdb.Fun;
@@ -130,18 +131,8 @@ public class RealtimeFeed {
                 }
 
                 @Override
-                public void setNode(int nodeId, double lat, double lon) {
-
-                }
-
-                @Override
                 public void setNode(int nodeId, double lat, double lon, double ele) {
 
-                }
-
-                @Override
-                public double getLatitude(int nodeId) {
-                    return 0;
                 }
 
                 @Override
@@ -150,17 +141,7 @@ public class RealtimeFeed {
                 }
 
                 @Override
-                public double getLongitude(int nodeId) {
-                    return 0;
-                }
-
-                @Override
                 public double getLon(int nodeId) {
-                    return 0;
-                }
-
-                @Override
-                public double getElevation(int nodeId) {
                     return 0;
                 }
 
@@ -202,9 +183,9 @@ public class RealtimeFeed {
             public EdgeIteratorState edge(int a, int b) {
                 int edge = firstEdge++;
                 final VirtualEdgeIteratorState newEdge = new VirtualEdgeIteratorState(-1,
-                        edge, a, b, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+                        GHUtility.createEdgeKey(edge, false), a, b, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
                 final VirtualEdgeIteratorState reverseNewEdge = new VirtualEdgeIteratorState(-1,
-                        edge, b, a, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), true);
+                        GHUtility.createEdgeKey(edge, true), b, a, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), true);
                 newEdge.setReverseEdge(reverseNewEdge);
                 reverseNewEdge.setReverseEdge(newEdge);
                 additionalEdges.push(newEdge);
@@ -212,12 +193,12 @@ public class RealtimeFeed {
             }
 
             @Override
-            public EdgeIteratorState edge(int a, int b, double distance, boolean bothDirections) {
+            public EdgeIteratorState getEdgeIteratorState(int edgeId, int adjNode) {
                 return null;
             }
 
             @Override
-            public EdgeIteratorState getEdgeIteratorState(int edgeId, int adjNode) {
+            public EdgeIteratorState getEdgeIteratorStateForKey(int edgeKey) {
                 return null;
             }
 
@@ -270,7 +251,7 @@ public class RealtimeFeed {
             ZoneId timezone = ZoneId.of(feed.agency.values().stream().findFirst().get().agency_timezone);
             GtfsStorageI gtfsStorage = new GtfsStorageI() {
                 @Override
-                public Map<String, Fare> getFares() {
+                public Map<String, Map<String, Fare>> getFares() {
                     return null;
                 }
 

@@ -386,13 +386,13 @@ public final class GraphHopperStorage implements GraphStorage, Graph {
     }
 
     @Override
-    public EdgeIteratorState edge(int a, int b, double distance, boolean bothDirections) {
-        return baseGraph.edge(a, b, distance, bothDirections);
+    public EdgeIteratorState getEdgeIteratorState(int edgeId, int adjNode) {
+        return baseGraph.getEdgeIteratorState(edgeId, adjNode);
     }
 
     @Override
-    public EdgeIteratorState getEdgeIteratorState(int edgeId, int adjNode) {
-        return baseGraph.getEdgeIteratorState(edgeId, adjNode);
+    public EdgeIteratorState getEdgeIteratorStateForKey(int edgeKey) {
+        return baseGraph.getEdgeIteratorStateForKey(edgeKey);
     }
 
     @Override
@@ -431,7 +431,7 @@ public final class GraphHopperStorage implements GraphStorage, Graph {
     }
 
     /**
-     * Flush and close resources like wayGeometry that are not needed for CH preparation.
+     * Flush and free base graph resources like way geometries and StringIndex
      */
     public void flushAndCloseEarly() {
         baseGraph.flushAndCloseGeometryAndNameStorage();

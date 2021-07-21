@@ -14,6 +14,7 @@ import com.graphhopper.storage.index.LocationIndexTree;
 import com.graphhopper.storage.index.Snap;
 import com.graphhopper.util.EdgeIterator;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.util.GHUtility;
 import com.graphhopper.util.shapes.Circle;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class BlockAreaWeightingTest {
         em = EncodingManager.create(Arrays.asList(encoder));
         graph = new GraphBuilder(em).create();
         // 0-1
-        graph.edge(0, 1, 1, true);
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 1).setDistance(1));
         updateDistancesFor(graph, 0, 0.00, 0.00);
         updateDistancesFor(graph, 1, 0.01, 0.01);
     }
@@ -47,8 +48,9 @@ public class BlockAreaWeightingTest {
         BlockAreaWeighting instance = new BlockAreaWeighting(new FastestWeighting(encoder), bArea);
         assertEquals(94.35, instance.calcEdgeWeight(edge, false), .01);
 
-        GHIntHashSet set = bArea.add(null);
+        GHIntHashSet set = new GHIntHashSet();
         set.add(0);
+        bArea.add(null, set);
         instance = new BlockAreaWeighting(new FastestWeighting(encoder), bArea);
         assertEquals(Double.POSITIVE_INFINITY, instance.calcEdgeWeight(edge, false), .01);
     }
@@ -74,8 +76,9 @@ public class BlockAreaWeightingTest {
     public void testBlockVirtualEdges_QueryGraph() {
         GraphEdgeIdFinder.BlockArea bArea = new GraphEdgeIdFinder.BlockArea(graph);
         // add base graph edge to fill caches and trigger edgeId cache search (without virtual edges)
-        GHIntHashSet set = bArea.add(new Circle(0.0025, 0.0025, 1));
+        GHIntHashSet set = new GHIntHashSet();
         set.add(0);
+        bArea.add(new Circle(0.0025, 0.0025, 1), set);
 
         LocationIndex index = new LocationIndexTree(graph, graph.getDirectory()).prepareIndex();
         Snap snap = index.findClosest(0.005, 0.005, EdgeFilter.ALL_EDGES);

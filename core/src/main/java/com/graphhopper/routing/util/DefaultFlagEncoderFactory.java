@@ -81,6 +81,6 @@ public class DefaultFlagEncoderFactory implements FlagEncoderFactory {
             return new SchmAllFlagEncoder(configuration);
         }
 
-        throw new IllegalArgumentException("entry in encoder list not supported " + name);
+        throw new IllegalArgumentException("entry in encoder list not supported: " + name);
     }
 }

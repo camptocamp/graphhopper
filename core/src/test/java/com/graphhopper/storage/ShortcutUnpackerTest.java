@@ -4,7 +4,6 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import com.carrotsearch.hppc.IntArrayList;
 import com.graphhopper.routing.ch.PrepareEncoder;
 import com.graphhopper.routing.ch.ShortcutUnpacker;
-import com.graphhopper.routing.ev.DecimalEncodedValue;
 import com.graphhopper.routing.ev.EncodedValueLookup;
 import com.graphhopper.routing.ev.TurnCost;
 import com.graphhopper.routing.util.CarFlagEncoder;
@@ -58,21 +57,22 @@ public class ShortcutUnpackerTest {
     @Test
     public void testUnpacking() {
         // 0-1-2-3-4-5-6
-        DecimalEncodedValue speedEnc = encoder.getAverageSpeedEnc();
-        double fwdSpeed = 60;
-        double bwdSpeed = 30;
-        graph.edge(0, 1, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(1, 2, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(2, 3, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(3, 4, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(4, 5, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(5, 6, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
+        GHUtility.setSpeed(60, 30, encoder,
+                graph.edge(0, 1).setDistance(1),
+                graph.edge(1, 2).setDistance(1),
+                graph.edge(2, 3).setDistance(1),
+                graph.edge(3, 4).setDistance(1),
+                graph.edge(4, 5).setDistance(1),
+                graph.edge(5, 6).setDistance(1) // edge 5
+        );
         graph.freeze();
-        shortcut(0, 2, 0, 1, 0, 1);
-        shortcut(2, 4, 2, 3, 2, 3);
-        shortcut(4, 6, 4, 5, 4, 5);
-        shortcut(2, 6, 7, 8, 2, 5);
-        shortcut(0, 6, 6, 9, 0, 5);
+
+        setCHLevels(1, 3, 5, 4, 2, 0, 6);
+        shortcut(4, 2, 2, 3, 2, 3, true);
+        shortcut(4, 6, 4, 5, 4, 5, false);
+        shortcut(2, 0, 0, 1, 0, 1, true);
+        shortcut(2, 6, 6, 7, 2, 5, false);
+        shortcut(0, 6, 8, 9, 0, 5, false);
 
         {
             // unpack the shortcut 0->6, traverse original edges in 'forward' order (from node 0 to 6)
@@ -137,6 +137,12 @@ public class ShortcutUnpackerTest {
         }
     }
 
+    private void setCHLevels(int... order) {
+        for (int i = 0; i < order.length; i++) {
+            chGraph.setLevel(order[i], i);
+        }
+    }
+
     @Test
     public void loopShortcut() {
         Assume.assumeTrue("loop shortcuts only exist for edge-based CH", edgeBased);
@@ -145,21 +151,21 @@ public class ShortcutUnpackerTest {
         //   2   4
         //    \ /
         // 0 - 1 - 5
-        DecimalEncodedValue speedEnc = encoder.getAverageSpeedEnc();
-        double fwdSpeed = 60;
-        double bwdSpeed = 30;
-        graph.edge(0, 1, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(1, 2, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(2, 3, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(3, 4, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(4, 1, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        graph.edge(1, 5, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
+        GHUtility.setSpeed(60, 30, encoder,
+                graph.edge(0, 1).setDistance(1),
+                graph.edge(1, 2).setDistance(1),
+                graph.edge(2, 3).setDistance(1),
+                graph.edge(3, 4).setDistance(1),
+                graph.edge(4, 1).setDistance(1),
+                graph.edge(1, 5).setDistance(1));
         graph.freeze();
-        shortcut(1, 3, 1, 2, 1, 2);
-        shortcut(3, 1, 3, 4, 3, 4);
-        shortcut(1, 1, 6, 7, 1, 4);
-        shortcut(0, 1, 0, 8, 0, 4);
-        shortcut(0, 5, 9, 5, 0, 5);
+
+        setCHLevels(2, 4, 3, 1, 5, 0);
+        shortcut(3, 1, 1, 2, 1, 2, true);
+        shortcut(3, 1, 3, 4, 3, 4, false);
+        shortcut(1, 1, 6, 7, 1, 4, false);
+        shortcut(1, 0, 0, 8, 0, 4, true);
+        shortcut(5, 0, 9, 5, 0, 5, true);
 
         {
             // unpack the shortcut 0->5, traverse original edges in 'forward' order (from node 0 to 5)
@@ -220,15 +226,14 @@ public class ShortcutUnpackerTest {
         //      2 5 3 2 1 4 6      turn costs ->
         // prev 0-1-2-3-4-5-6 next
         //      1 0 1 4 2 3 2      turn costs <-
-        DecimalEncodedValue speedEnc = encoder.getAverageSpeedEnc();
-        double fwdSpeed = 60;
-        double bwdSpeed = 30;
-        EdgeIteratorState edge0 = graph.edge(0, 1, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        EdgeIteratorState edge1 = graph.edge(1, 2, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        EdgeIteratorState edge2 = graph.edge(2, 3, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        EdgeIteratorState edge3 = graph.edge(3, 4, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        EdgeIteratorState edge4 = graph.edge(4, 5, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
-        EdgeIteratorState edge5 = graph.edge(5, 6, 1, true).set(speedEnc, fwdSpeed).setReverse(speedEnc, bwdSpeed);
+        EdgeIteratorState edge0, edge1, edge2, edge3, edge4, edge5;
+        GHUtility.setSpeed(60, 30, encoder,
+                edge0 = graph.edge(0, 1).setDistance(1),
+                edge1 = graph.edge(1, 2).setDistance(1),
+                edge2 = graph.edge(2, 3).setDistance(1),
+                edge3 = graph.edge(3, 4).setDistance(1),
+                edge4 = graph.edge(4, 5).setDistance(1),
+                edge5 = graph.edge(5, 6).setDistance(1));
         graph.freeze();
 
         // turn costs ->
@@ -248,11 +253,12 @@ public class ShortcutUnpackerTest {
         setTurnCost(edge1.getEdge(), 1, edge0.getEdge(), 0.0);
         setTurnCost(edge0.getEdge(), 0, PREV_EDGE, 1.0);
 
-        shortcut(0, 2, 0, 1, 0, 1);
-        shortcut(2, 4, 2, 3, 2, 3);
-        shortcut(4, 6, 4, 5, 4, 5);
-        shortcut(2, 6, 7, 8, 2, 5);
-        shortcut(0, 6, 6, 9, 0, 5);
+        setCHLevels(1, 3, 5, 4, 2, 0, 6);
+        shortcut(4, 2, 2, 3, 2, 3, true);
+        shortcut(4, 6, 4, 5, 4, 5, false);
+        shortcut(2, 0, 0, 1, 0, 1, true);
+        shortcut(2, 6, 6, 7, 2, 5, false);
+        shortcut(0, 6, 8, 9, 0, 5, false);
 
         {
             // unpack the shortcut 0->6, traverse original edges in 'forward' order (from node 0 to 6)
@@ -303,13 +309,14 @@ public class ShortcutUnpackerTest {
         graph.getTurnCostStorage().set(((EncodedValueLookup) encodingManager).getDecimalEncodedValue(TurnCost.key(encoder.toString())), fromEdge, viaNode, toEdge, cost);
     }
 
-    private void shortcut(int baseNode, int adjNode, int skip1, int skip2, int origFirst, int origLast) {
+    private void shortcut(int baseNode, int adjNode, int skip1, int skip2, int origFirst, int origLast, boolean reverse) {
         // shortcut weight/distance is not important for us here
         double weight = 1;
+        int flags = reverse ? PrepareEncoder.getScFwdDir() : PrepareEncoder.getScBwdDir();
         if (edgeBased) {
-            chGraph.shortcutEdgeBased(baseNode, adjNode, PrepareEncoder.getScFwdDir(), weight, skip1, skip2, origFirst, origLast);
+            chGraph.shortcutEdgeBased(baseNode, adjNode, flags, weight, skip1, skip2, origFirst, origLast);
         } else {
-            chGraph.shortcut(baseNode, adjNode, PrepareEncoder.getScFwdDir(), weight, skip1, skip2);
+            chGraph.shortcut(baseNode, adjNode, flags, weight, skip1, skip2);
         }
     }
 

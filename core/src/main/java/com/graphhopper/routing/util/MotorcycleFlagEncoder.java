@@ -53,9 +53,6 @@ public class MotorcycleFlagEncoder extends CarFlagEncoder {
 
     public MotorcycleFlagEncoder(PMap properties) {
         super(properties.putObject("speed_two_directions", true));
-        restrictions.remove("motorcar");
-        // moped, mofa
-        restrictions.add("motorcycle");
 
         absoluteBarriers.remove("bus_trap");
         absoluteBarriers.remove("sump_buster");
@@ -206,7 +203,7 @@ public class MotorcycleFlagEncoder extends CarFlagEncoder {
         } else {
             accessEnc.setBool(false, edgeFlags, true);
             accessEnc.setBool(true, edgeFlags, true);
-            double ferrySpeed = getFerrySpeed(way);
+            double ferrySpeed = ferrySpeedCalc.getSpeed(way);
             setSpeed(false, edgeFlags, ferrySpeed);
             setSpeed(true, edgeFlags, ferrySpeed);
         }
@@ -276,6 +273,11 @@ public class MotorcycleFlagEncoder extends CarFlagEncoder {
      */
     protected double increaseBendinessImpact(double bendiness) {
         return (Math.pow(bendiness, 2));
+    }
+
+    @Override
+    public TransportationMode getTransportationMode() {
+        return TransportationMode.MOTORCYCLE;
     }
 
     @Override

@@ -23,11 +23,13 @@ import com.graphhopper.routing.querygraph.VirtualEdgeIteratorState;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FootFlagEncoder;
 import com.graphhopper.routing.weighting.FastestWeighting;
+import com.graphhopper.storage.GraphBuilder;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.RAMDirectory;
 import com.graphhopper.storage.index.Snap;
 import com.graphhopper.util.DistanceCalcEuclidean;
 import com.graphhopper.util.EdgeIteratorState;
+import com.graphhopper.util.GHUtility;
 import com.graphhopper.util.PointList;
 import org.junit.Test;
 
@@ -56,8 +58,7 @@ public class GraphExplorerTest {
 
     @Test
     public void testNonEmptyGraph() {
-        GraphHopperStorage graph = new GraphHopperStorage(new RAMDirectory("wurst"), encodingManager, false);
-        graph.create(0);
+        GraphHopperStorage graph = new GraphBuilder(encodingManager).create();
         EdgeIteratorState d = graph.edge(4, 5);
         d.set(pt.getAccessEnc(), true);
         d.set(foot.getAccessEnc(), true);
@@ -67,35 +68,34 @@ public class GraphExplorerTest {
         List<VirtualEdgeIteratorState> extraEdges = new ArrayList<>();
 
         QueryGraph queryGraph = QueryGraph.create(graph, Collections.emptyList());
-        GraphExplorer testee = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, 5.0, false);
+        GraphExplorer testee = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, false, 5.0, false, 0);
 
-        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 4, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 4, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains(d.toString()));
     }
 
     @Test
     public void testExtraEdgesWithEmptyGraph() {
-        GraphHopperStorage graph = new GraphHopperStorage(new RAMDirectory("wurst"), encodingManager, false);
-
+        GraphHopperStorage graph = new GraphBuilder(encodingManager).create();
         GtfsStorage gtfsStorage = mock(GtfsStorage.class);
         RealtimeFeed realtimeFeed = mock(RealtimeFeed.class);
         List<VirtualEdgeIteratorState> extraEdges = new ArrayList<>();
-        VirtualEdgeIteratorState e = new VirtualEdgeIteratorState(0, 0, 0, 1, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState e = new VirtualEdgeIteratorState(0, GHUtility.createEdgeKey(0, false), 0, 1, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         e.set(foot.getAccessEnc(), true);
         extraEdges.add(e);
-        VirtualEdgeIteratorState f = new VirtualEdgeIteratorState(1, 1, 1, 2, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState f = new VirtualEdgeIteratorState(1, GHUtility.createEdgeKey(1, false), 1, 2, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         f.set(foot.getAccessEnc(), true);
         extraEdges.add(f);
-        VirtualEdgeIteratorState g = new VirtualEdgeIteratorState(2, 2, 1, 3, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState g = new VirtualEdgeIteratorState(2, GHUtility.createEdgeKey(2, false), 1, 3, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         g.set(foot.getAccessEnc(), true);
         extraEdges.add(g);
 
         WrapperGraph wrapperGraph = new WrapperGraph(graph, extraEdges);
         QueryGraph queryGraph = QueryGraph.create(wrapperGraph, Collections.emptyList());
-        GraphExplorer testee = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, 5.0, false);
-        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 0, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        GraphExplorer testee = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, false, 5.0, false, 0);
+        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 0, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains(e.toString()));
-        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 1, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 1, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains(f.toString(), g.toString()));
     }
 
@@ -112,30 +112,30 @@ public class GraphExplorerTest {
         GtfsStorage gtfsStorage = mock(GtfsStorage.class);
         RealtimeFeed realtimeFeed = mock(RealtimeFeed.class);
         List<VirtualEdgeIteratorState> extraEdges = new ArrayList<>();
-        VirtualEdgeIteratorState e = new VirtualEdgeIteratorState(-1, edgeId++, 0, 1, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState e = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 0, 1, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         e.set(foot.getAccessEnc(), true);
         extraEdges.add(e);
-        VirtualEdgeIteratorState f = new VirtualEdgeIteratorState(-1, edgeId++, 1, 2, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState f = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 1, 2, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         f.set(foot.getAccessEnc(), true);
         extraEdges.add(f);
-        VirtualEdgeIteratorState g = new VirtualEdgeIteratorState(-1, edgeId++, 1, 3, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState g = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 1, 3, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         g.set(foot.getAccessEnc(), true);
         extraEdges.add(g);
-        VirtualEdgeIteratorState h = new VirtualEdgeIteratorState(-1, edgeId++, 4, 7, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState h = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 4, 7, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         h.set(foot.getAccessEnc(), true);
         extraEdges.add(h);
 
         WrapperGraph wrapperGraph = new WrapperGraph(graph, extraEdges);
         QueryGraph queryGraph = QueryGraph.create(wrapperGraph, emptyList());
-        GraphExplorer forward = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, 5.0, false);
-        assertThat(() -> forward.exploreEdgesAround(new Label(0, -1, 0, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        GraphExplorer forward = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, false, 5.0, false, 0);
+        assertThat(() -> forward.exploreEdgesAround(new Label(0, -1, 0, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains("0->1"));
-        assertThat(() -> forward.exploreEdgesAround(new Label(0, -1, 1, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat(() -> forward.exploreEdgesAround(new Label(0, -1, 1, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains("1->2", "1->3"));
-        assertThat(() -> forward.exploreEdgesAround(new Label(0, -1, 4, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat(() -> forward.exploreEdgesAround(new Label(0, -1, 4, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains("0 4-5", "4->7"));
-        GraphExplorer backward = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, true, false, 5.0, false);
-        assertThat(() -> backward.exploreEdgesAround(new Label(0, -1, 1, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        GraphExplorer backward = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, true, false, false, 5.0, false, 0);
+        assertThat(() -> backward.exploreEdgesAround(new Label(0, -1, 1, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains("1->0"));
     }
 
@@ -163,16 +163,16 @@ public class GraphExplorerTest {
         GtfsStorage gtfsStorage = mock(GtfsStorage.class);
         RealtimeFeed realtimeFeed = mock(RealtimeFeed.class);
         List<VirtualEdgeIteratorState> extraEdges = new ArrayList<>();
-        VirtualEdgeIteratorState e = new VirtualEdgeIteratorState(-1, edgeId++, 0, 1, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState e = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 0, 1, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         e.set(foot.getAccessEnc(), true);
         extraEdges.add(e);
-        VirtualEdgeIteratorState f = new VirtualEdgeIteratorState(-1, edgeId++, 1, 2, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState f = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 1, 2, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         f.set(foot.getAccessEnc(), true);
         extraEdges.add(f);
-        VirtualEdgeIteratorState g = new VirtualEdgeIteratorState(-1, edgeId++, 1, 3, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState g = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 1, 3, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         g.set(foot.getAccessEnc(), true);
         extraEdges.add(g);
-        VirtualEdgeIteratorState h = new VirtualEdgeIteratorState(-1, edgeId++, 4, 7, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
+        VirtualEdgeIteratorState h = new VirtualEdgeIteratorState(-1, GHUtility.createEdgeKey(edgeId++, false), 4, 7, 0.0, encodingManager.createEdgeFlags(), "", new PointList(), false);
         h.set(foot.getAccessEnc(), true);
         extraEdges.add(h);
 
@@ -192,14 +192,14 @@ public class GraphExplorerTest {
         point2.calcSnappedPoint(new DistanceCalcEuclidean());
         QueryGraph queryGraph = QueryGraph.create(wrapperGraph, point1, point2);
 
-        GraphExplorer testee = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, 5.0, false);
-        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 0, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        GraphExplorer testee = new GraphExplorer(queryGraph, new FastestWeighting(foot), pt, gtfsStorage, realtimeFeed, false, false, false, 5.0, false, 0);
+        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 0, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains(e.toString()));
-        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 1, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 1, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains(f.toString(), g.toString()));
-        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 4, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat(() -> testee.exploreEdgesAround(new Label(0, -1, 4, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 contains(containsString("4->8"), containsString("4->9"), containsString("4->7")));
-        assertThat((Iterable<String>) () -> testee.exploreEdgesAround(new Label(0, -1, 7, 0, 0.0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
+        assertThat((Iterable<String>) () -> testee.exploreEdgesAround(new Label(0, -1, 7, 0, 0L, 0, 0, false, null)).map(Object::toString).iterator(),
                 emptyIterable());
 
     }

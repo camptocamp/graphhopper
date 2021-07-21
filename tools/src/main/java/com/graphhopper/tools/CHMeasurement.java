@@ -24,7 +24,6 @@ import com.graphhopper.GraphHopperConfig;
 import com.graphhopper.config.CHProfile;
 import com.graphhopper.config.LMProfile;
 import com.graphhopper.config.Profile;
-import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.*;
@@ -86,7 +85,7 @@ public class CHMeasurement {
         final int perfIterations = ghConfig.getInt("perf_iterations", 1000);
         final boolean quick = ghConfig.getBool("quick", false);
 
-        final GraphHopper graphHopper = new GraphHopperOSM();
+        final GraphHopper graphHopper = new GraphHopper();
         String profile = "car_profile";
         if (withTurnCosts) {
             ghConfig.putObject("graph.flag_encoders", "car|turn_costs=true");
@@ -108,8 +107,6 @@ public class CHMeasurement {
                     new Profile(profile).setVehicle("car").setWeighting("fastest").setTurnCosts(false)
             ));
         }
-        graphHopper.getRouterConfig().setCHDisablingAllowed(true);
-        graphHopper.getRouterConfig().setLMDisablingAllowed(true);
 
         ghConfig.putObject(PERIODIC_UPDATES, periodicUpdates);
         ghConfig.putObject(LAST_LAZY_NODES_UPDATES, lazyUpdates);
@@ -212,7 +209,8 @@ public class CHMeasurement {
         final NodeAccess nodeAccess = g.getNodeAccess();
         final Random random = new Random(seed);
 
-        MiniPerfTest compareTest = new MiniPerfTest() {
+        MiniPerfTest compareTest = new MiniPerfTest();
+        compareTest.setIterations(iterations).start(new MiniPerfTest.Task() {
             long chTime = 0;
             long noChTime = 0;
             long chErrors = 0;
@@ -284,8 +282,7 @@ public class CHMeasurement {
                 }
                 return chRoute.getErrors().size();
             }
-        };
-        compareTest.setIterations(iterations).start();
+        });
     }
 
     private static void runPerformanceTest(final String algo, final GraphHopper graphHopper, final boolean withTurnCosts,
@@ -298,7 +295,8 @@ public class CHMeasurement {
 
         LOGGER.info("Running performance test for {}, seed = {}", algo, seed);
         final long[] numVisitedNodes = {0};
-        MiniPerfTest performanceTest = new MiniPerfTest() {
+        MiniPerfTest performanceTest = new MiniPerfTest();
+        performanceTest.setIterations(iterations).start(new MiniPerfTest.Task() {
             private long queryTime;
 
             @Override
@@ -329,8 +327,7 @@ public class CHMeasurement {
                     queryTime += nanoTime() - start;
                 return getRealErrors(route).size();
             }
-        };
-        performanceTest.setIterations(iterations).start();
+        });
         if (performanceTest.getDummySum() > 0.01 * iterations) {
             throw new IllegalStateException("too many errors, probably something is wrong");
         }

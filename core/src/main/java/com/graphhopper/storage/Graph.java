@@ -68,11 +68,6 @@ public interface Graph {
     EdgeIteratorState edge(int a, int b);
 
     /**
-     * Use edge(a,b).setDistance().setFlags instead
-     */
-    EdgeIteratorState edge(int a, int b, double distance, boolean bothDirections);
-
-    /**
      * Returns a wrapper over the specified edgeId.
      *
      * @param adjNode is the node that will be returned via getAdjNode(). If adjNode is
@@ -81,6 +76,13 @@ public interface Graph {
      * @throws IllegalStateException if edgeId is not valid
      */
     EdgeIteratorState getEdgeIteratorState(int edgeId, int adjNode);
+
+    /**
+     * Returns the edge state for the given edge key
+     *
+     * @see EdgeIteratorState#getEdgeKey()
+     */
+    EdgeIteratorState getEdgeIteratorStateForKey(int edgeKey);
 
     /**
      * @return the 'opposite' node of a given edge, so if there is an edge 3-2 and node =2 this returns 3

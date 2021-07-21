@@ -73,8 +73,8 @@ public class CHQueryWithTurnCostsTest {
     public void testFindPathWithTurnCosts_bidirected_no_shortcuts_smallGraph() {
         // some special cases where from=to, or start and target edges are the same
         // 1 -- 0 -- 2
-        graph.edge(1, 0, 3, true);
-        graph.edge(0, 2, 5, true);
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(1, 0).setDistance(3));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 2).setDistance(5));
         setTurnCost(1, 0, 2, 3);
         graph.freeze();
 
@@ -95,12 +95,12 @@ public class CHQueryWithTurnCostsTest {
     @Test
     public void testFindPathWithTurnCosts_bidirected_no_shortcuts() {
         // 0 -- 2 -- 4 -- 6 -- 5 -- 3 -- 1
-        graph.edge(0, 2, 3, true);
-        graph.edge(2, 4, 2, true);
-        graph.edge(4, 6, 7, true);
-        graph.edge(6, 5, 9, true);
-        graph.edge(5, 3, 1, true);
-        graph.edge(3, 1, 4, true);
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 2).setDistance(3));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(2, 4).setDistance(2));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(4, 6).setDistance(7));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(6, 5).setDistance(9));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(5, 3).setDistance(1));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(3, 1).setDistance(4));
         setTurnCost(0, 2, 4, 3);
         setTurnCost(4, 6, 5, 6);
         setTurnCost(5, 6, 4, 2);
@@ -133,31 +133,30 @@ public class CHQueryWithTurnCostsTest {
         //           1   2
         //            \ /
         // 0 - 7 - 8 - 4 - 6 - 5
-        graph.edge(0, 7, 1, false);
-        graph.edge(7, 8, 1, false);
-        graph.edge(8, 4, 1, false);
-        graph.edge(4, 1, 1, false);
-        graph.edge(1, 3, 1, false);
-        graph.edge(3, 2, 1, false);
-        graph.edge(2, 4, 1, false);
-        graph.edge(4, 6, 1, false);
-        graph.edge(6, 5, 1, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 7).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(7, 8).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(8, 4).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(4, 1).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(1, 3).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 2).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 4).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(4, 6).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(6, 5).setDistance(1));
         setRestriction(8, 4, 6);
         setRestriction(8, 4, 2);
         setRestriction(1, 4, 6);
 
         graph.freeze();
 
-        // from contracting node 1
-        addShortcut(4, 3, 3, 4, 3, 4, 2);
-        // from contracting node 2
-        addShortcut(3, 4, 5, 6, 5, 6, 2);
-        // from contracting node 3
-        addShortcut(4, 4, 3, 6, 9, 10, 4);
-        // from contracting node 4
-        addShortcut(8, 4, 2, 6, 2, 11, 5);
-        addShortcut(8, 6, 2, 7, 12, 7, 6);
         setLevelEqualToNodeIdForAllNodes();
+        // from contracting nodes 1&2
+        addShortcut(3, 4, 3, 4, 3, 4, 2, true);
+        addShortcut(3, 4, 5, 6, 5, 6, 2, false);
+        // from contracting node 3
+        addShortcut(4, 4, 3, 6, 9, 10, 4, false);
+        // from contracting node 4
+        addShortcut(4, 8, 2, 6, 2, 11, 5, true);
+        addShortcut(6, 8, 2, 7, 12, 7, 6, true);
 
         testPathCalculation(0, 5, 9, IntArrayList.from(0, 7, 8, 4, 1, 3, 2, 4, 6, 5));
     }
@@ -170,30 +169,30 @@ public class CHQueryWithTurnCostsTest {
         //       1   2
         //        \ /
         // 5 - 6 - 4 - 7 - 8 - 0
-        graph.edge(5, 6, 1, false);
-        graph.edge(6, 4, 1, false);
-        graph.edge(4, 1, 1, false);
-        graph.edge(1, 3, 1, false);
-        graph.edge(3, 2, 1, false);
-        graph.edge(2, 4, 1, false);
-        graph.edge(4, 7, 1, false);
-        graph.edge(7, 8, 1, false);
-        graph.edge(8, 0, 1, false);
+        GHUtility.setSpeed(60, 0, encoder,
+                graph.edge(5, 6).setDistance(1),
+                graph.edge(6, 4).setDistance(1),
+                graph.edge(4, 1).setDistance(1),
+                graph.edge(1, 3).setDistance(1),
+                graph.edge(3, 2).setDistance(1),
+                graph.edge(2, 4).setDistance(1),
+                graph.edge(4, 7).setDistance(1),
+                graph.edge(7, 8).setDistance(1),
+                graph.edge(8, 0).setDistance(1));
         setRestriction(6, 4, 7);
         setRestriction(6, 4, 2);
         setRestriction(1, 4, 7);
         graph.freeze();
 
-        // from contracting node 1
-        addShortcut(4, 3, 2, 3, 2, 3, 2);
-        // from contracting node 2
-        addShortcut(3, 4, 4, 5, 4, 5, 2);
-        // from contracting node 3
-        addShortcut(4, 4, 2, 5, 9, 10, 4);
-        // from contracting node 4
-        addShortcut(6, 4, 1, 5, 1, 11, 5);
-        addShortcut(6, 7, 1, 6, 12, 6, 6);
         setLevelEqualToNodeIdForAllNodes();
+        // from contracting nodes 1&2
+        addShortcut(3, 4, 2, 3, 2, 3, 2, true);
+        addShortcut(3, 4, 4, 5, 4, 5, 2, false);
+        // from contracting node 3
+        addShortcut(4, 4, 2, 5, 9, 10, 4, false);
+        // from contracting node 4
+        addShortcut(4, 6, 1, 5, 1, 11, 5, true);
+        addShortcut(6, 7, 1, 6, 12, 6, 6, false);
 
         testPathCalculation(5, 0, 9, IntArrayList.from(5, 6, 4, 1, 3, 2, 4, 7, 8, 0));
     }
@@ -204,18 +203,18 @@ public class CHQueryWithTurnCostsTest {
         //   /5\   /1\
         //  /   \2/   \
         // 1     0     4
-        graph.edge(1, 2, 4, false);
-        graph.edge(2, 0, 2, false);
-        graph.edge(0, 3, 3, false);
-        graph.edge(3, 4, 2, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(1, 2).setDistance(4));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 0).setDistance(2));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 3).setDistance(3));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 4).setDistance(2));
         setTurnCost(1, 2, 0, 5);
         setTurnCost(2, 0, 3, 2);
         setTurnCost(0, 3, 4, 1);
         graph.freeze();
 
         // only when node 0 is contracted a shortcut is added
-        addShortcut(2, 3, 1, 2, 1, 2, 7);
         setLevelEqualToNodeIdForAllNodes();
+        addShortcut(2, 3, 1, 2, 1, 2, 7, false);
 
         // when we are searching a path to the highest level node, the backward search will not expand any edges
         testPathCalculation(1, 4, 11, IntArrayList.from(1, 2, 0, 3, 4), 8);
@@ -231,21 +230,21 @@ public class CHQueryWithTurnCostsTest {
     public void testFindPathWithTurnCosts_directed_single_shortcut_fwdSearchStopsQuickly() {
         //     0
         //    / \
-        // 1-3-s-2-4
-        graph.edge(1, 3, 2, false);
-        graph.edge(3, 0, 3, false);
-        graph.edge(0, 2, 1, false);
-        graph.edge(2, 4, 3, false);
+        // 1-2-s-3-4
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(1, 2).setDistance(2));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 0).setDistance(3));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 3).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 4).setDistance(3));
         graph.freeze();
 
-        setTurnCost(1, 3, 0, 2);
-        setTurnCost(0, 2, 4, 4);
+        setTurnCost(1, 2, 0, 2);
+        setTurnCost(0, 3, 4, 4);
 
-        // from contracting node 0
-        addShortcut(3, 2, 1, 2, 1, 2, 4);
         setLevelEqualToNodeIdForAllNodes();
+        // from contracting node 0
+        addShortcut(2, 3, 1, 2, 1, 2, 4, false);
 
-        testPathCalculation(1, 4, 9, IntArrayList.from(1, 3, 0, 2, 4), 6);
+        testPathCalculation(1, 4, 9, IntArrayList.from(1, 2, 0, 3, 4), 6);
     }
 
     @Test
@@ -254,19 +253,19 @@ public class CHQueryWithTurnCostsTest {
         //   /5\   /1\
         //  /   \2/   \
         // 2     1     4
-        graph.edge(2, 3, 4, false);
-        graph.edge(3, 1, 2, false);
-        graph.edge(1, 0, 3, false);
-        graph.edge(0, 4, 2, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 3).setDistance(4));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 1).setDistance(2));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(1, 0).setDistance(3));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 4).setDistance(2));
         setTurnCost(2, 3, 1, 5);
         setTurnCost(3, 1, 0, 2);
         setTurnCost(1, 0, 4, 1);
         graph.freeze();
 
-        // contraction of node 0 and 1 each yield a single shortcut
-        addShortcut(1, 4, 2, 3, 2, 3, 6);
-        addShortcut(3, 4, 1, 3, 1, 4, 10);
         setLevelEqualToNodeIdForAllNodes();
+        // contraction of node 0 and 1 each yield a single shortcut
+        addShortcut(1, 4, 2, 3, 2, 3, 6, false);
+        addShortcut(3, 4, 1, 3, 1, 4, 10, false);
 
         // the turn costs have to be accounted for also when the shortcuts are used
         testPathCalculation(2, 4, 11, IntArrayList.from(2, 3, 1, 0, 4), 8);
@@ -283,10 +282,10 @@ public class CHQueryWithTurnCostsTest {
         // |         |
         // v         v
         // 2 -> 3 -> 1
-        graph.edge(0, 2, 3, false);
-        graph.edge(2, 3, 2, false);
-        graph.edge(3, 1, 9, false);
-        graph.edge(0, 1, 50, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 2).setDistance(3));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 3).setDistance(2));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 1).setDistance(9));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 1).setDistance(50));
         setTurnCost(2, 3, 1, 4);
         graph.freeze();
 
@@ -303,12 +302,13 @@ public class CHQueryWithTurnCostsTest {
         //      |    |
         //      v    v
         //      3 -> 4 -> 2
-        graph.edge(0, 1, 9, false);
-        graph.edge(1, 5, 2, false);
-        graph.edge(1, 3, 2, false);
-        graph.edge(3, 4, 4, false);
-        graph.edge(5, 4, 6, false);
-        graph.edge(4, 2, 3, false);
+        GHUtility.setSpeed(60, 0, encoder,
+                graph.edge(0, 1).setDistance(9),
+                graph.edge(1, 5).setDistance(2),
+                graph.edge(1, 3).setDistance(2),
+                graph.edge(3, 4).setDistance(4),
+                graph.edge(5, 4).setDistance(6),
+                graph.edge(4, 2).setDistance(3));
         setTurnCost(1, 3, 4, 3);
         graph.freeze();
 
@@ -323,10 +323,10 @@ public class CHQueryWithTurnCostsTest {
         //  \   ^
         //   \  |
         //    <-2<-3
-        graph.edge(1, 0, 9, false);
-        graph.edge(2, 0, 14, false);
-        graph.edge(2, 1, 2, false);
-        graph.edge(3, 2, 9, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(1, 0).setDistance(9));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 0).setDistance(14));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 1).setDistance(2));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 2).setDistance(9));
         graph.freeze();
 
         //no shortcuts
@@ -341,12 +341,12 @@ public class CHQueryWithTurnCostsTest {
         // | __/
         // v/
         // 3 -> 2
-        graph.edge(0, 1, 9, true);
-        graph.edge(0, 3, 14, false);
-        graph.edge(3, 2, 9, false);
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 1).setDistance(9));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 3).setDistance(14));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 2).setDistance(9));
         graph.freeze();
-        addShortcut(1, 3, 0, 1, 0, 1, 23);
         setLevelEqualToNodeIdForAllNodes();
+        addShortcut(1, 3, 0, 1, 0, 1, 23, false);
         testPathCalculation(0, 2, 23, IntArrayList.from(0, 3, 2));
     }
 
@@ -355,9 +355,9 @@ public class CHQueryWithTurnCostsTest {
         //       3
         //       |
         // 0 --- 2 --- 1
-        graph.edge(0, 2, 1, false);
-        graph.edge(2, 3, 2, true);
-        graph.edge(2, 1, 3, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 2).setDistance(1));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(2, 3).setDistance(2));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 1).setDistance(3));
         setRestriction(0, 2, 1);
         setTurnCost(0, 2, 3, 5);
         setTurnCost(2, 3, 2, 4);
@@ -397,17 +397,21 @@ public class CHQueryWithTurnCostsTest {
             nodeA = nodeB;
             nodeB = tmp;
         }
-        graph.edge(1, nodeA, 4, false);
-        graph.edge(0, 3, 4, false);
-        graph.edge(nodeB, 2, 1, false);
-        final EdgeIteratorState e3toB = graph.edge(3, nodeB, 2, false);
-        final EdgeIteratorState e3toA = graph.edge(3, nodeA, 1, true);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(1, nodeA).setDistance(4));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 3).setDistance(4));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(nodeB, 2).setDistance(1));
+        final EdgeIteratorState e3toB = GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, nodeB).setDistance(2));
+        final EdgeIteratorState e3toA = GHUtility.setSpeed(60, true, true, encoder, graph.edge(3, nodeA).setDistance(1));
         graph.freeze();
         setRestriction(0, 3, nodeB);
 
         // one shortcut when contracting node 3
-        addShortcut(nodeA, nodeB, e3toA.getEdge(), e3toB.getEdge(), e3toA.getEdge(), e3toB.getEdge(), 2);
         setLevelEqualToNodeIdForAllNodes();
+        if (toLowerLevelNode) {
+            addShortcut(nodeB, nodeA, e3toA.getEdge(), e3toB.getEdge(), e3toA.getEdge(), e3toB.getEdge(), 2, true);
+        } else {
+            addShortcut(nodeA, nodeB, e3toA.getEdge(), e3toB.getEdge(), e3toA.getEdge(), e3toB.getEdge(), 2, false);
+        }
 
         // without u-turns the only 'possible' path 0-3-A-3-B-2 is forbidden
         testPathCalculation(0, 2, -1, IntArrayList.from());
@@ -418,10 +422,10 @@ public class CHQueryWithTurnCostsTest {
         //       3\
         //       |/
         // 0 --- 2 --- 1
-        final EdgeIteratorState edge1 = graph.edge(0, 2, 4, false);
-        final EdgeIteratorState edge2 = graph.edge(2, 3, 1, true);
-        final EdgeIteratorState edge3 = graph.edge(3, 2, 7, false);
-        final EdgeIteratorState edge4 = graph.edge(2, 1, 3, false);
+        final EdgeIteratorState edge1 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 2).setDistance(4));
+        final EdgeIteratorState edge2 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(2, 3).setDistance(1));
+        final EdgeIteratorState edge3 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 2).setDistance(7));
+        final EdgeIteratorState edge4 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 1).setDistance(3));
         // need to specify edges explicitly because there are two edges between nodes 2 and 3
         setRestriction(edge1, edge4, 2);
         setTurnCost(edge1, edge2, 2, 3);
@@ -444,12 +448,13 @@ public class CHQueryWithTurnCostsTest {
         // 0 --- 3 --- 1
         //  \         /
         //   --- 4 ---
-        graph.edge(0, 2, 1, false);
-        graph.edge(0, 3, 3, false);
-        graph.edge(0, 4, 2, false);
-        graph.edge(2, 1, 1, false);
-        graph.edge(3, 1, 2, false);
-        graph.edge(4, 1, 6, false);
+        GHUtility.setSpeed(60, 0, encoder,
+                graph.edge(0, 2).setDistance(1),
+                graph.edge(0, 3).setDistance(3),
+                graph.edge(0, 4).setDistance(2),
+                graph.edge(2, 1).setDistance(1),
+                graph.edge(3, 1).setDistance(2),
+                graph.edge(4, 1).setDistance(6));
         setTurnCost(0, 2, 1, 9);
         setTurnCost(0, 3, 1, 2);
         setTurnCost(0, 4, 1, 1);
@@ -468,10 +473,10 @@ public class CHQueryWithTurnCostsTest {
         //     ---
         //     \ /
         // 0 -- 3 -- 2 -- 1
-        EdgeIteratorState edge0 = graph.edge(0, 3, 1, true);
-        EdgeIteratorState edge1 = graph.edge(3, 3, 1, false);
-        EdgeIteratorState edge2 = graph.edge(3, 2, 1, true);
-        EdgeIteratorState edge3 = graph.edge(2, 1, 1, false);
+        EdgeIteratorState edge0 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 3).setDistance(1));
+        EdgeIteratorState edge1 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 3).setDistance(1));
+        EdgeIteratorState edge2 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(3, 2).setDistance(1));
+        EdgeIteratorState edge3 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 1).setDistance(1));
         setRestriction(edge0, edge2, 3);
         graph.freeze();
 
@@ -490,17 +495,17 @@ public class CHQueryWithTurnCostsTest {
         //          -0-
         //          \ /
         // 3 -- 4 -- 2 -- 1
-        EdgeIteratorState edge0 = graph.edge(3, 4, 1, true);
-        EdgeIteratorState edge1 = graph.edge(4, 2, 1, true);
-        EdgeIteratorState edge2 = graph.edge(2, 0, 1, false);
-        EdgeIteratorState edge3 = graph.edge(0, 2, 1, false);
-        EdgeIteratorState edge4 = graph.edge(2, 1, 1, false);
+        EdgeIteratorState edge0 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(3, 4).setDistance(1));
+        EdgeIteratorState edge1 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(4, 2).setDistance(1));
+        EdgeIteratorState edge2 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 0).setDistance(1));
+        EdgeIteratorState edge3 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 2).setDistance(1));
+        EdgeIteratorState edge4 = GHUtility.setSpeed(60, true, false, encoder, graph.edge(2, 1).setDistance(1));
         setRestriction(edge1, edge4, 2);
         graph.freeze();
 
-        // contracting node 0 yields (the only) shortcut - and its a loop
-        addShortcut(2, 2, edge2.getEdge(), edge3.getEdge(), edge2.getEdge(), edge3.getEdge(), 2);
         setLevelEqualToNodeIdForAllNodes();
+        // contracting node 0 yields (the only) shortcut - and its a loop
+        addShortcut(2, 2, edge2.getEdge(), edge3.getEdge(), edge2.getEdge(), edge3.getEdge(), 2, false);
 
         // node 2 is the bridge node where the forward and backward searches meet (highest level). since there is a turn restriction
         // at node 2 we cannot go from 4 to 1 directly, but we need to take the loop at 2 first. when the backward
@@ -520,19 +525,19 @@ public class CHQueryWithTurnCostsTest {
         //     |
         //     v  no right turn at 4 when coming from 3!
         //     2
-        graph.edge(3, 4, 2, false);
-        graph.edge(4, 0, 1, true);
-        graph.edge(0, 1, 3, false);
-        graph.edge(4, 1, 5, true);
-        graph.edge(4, 2, 4, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 4).setDistance(2));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(4, 0).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 1).setDistance(3));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(4, 1).setDistance(5));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(4, 2).setDistance(4));
         setRestriction(3, 4, 2);
         graph.freeze();
 
-        // contracting node 0
-        addShortcut(4, 1, 1, 2, 1, 2, 4);
-        // contracting node 1
-        addShortcut(4, 4, 1, 3, 5, 3, 9);
         setLevelEqualToNodeIdForAllNodes();
+        // contracting node 0
+        addShortcut(1, 4, 1, 2, 1, 2, 4, true);
+        // contracting node 1
+        addShortcut(4, 4, 1, 3, 5, 3, 9, false);
 
         testPathCalculation(3, 2, 15, IntArrayList.from(3, 4, 0, 1, 4, 2));
     }
@@ -563,20 +568,21 @@ public class CHQueryWithTurnCostsTest {
         //  A-5->2
         //    |
         //    B-7
-        graph.edge(4, nodeA, 1, false);
-        graph.edge(nodeA, 5, 2, false);
-        graph.edge(5, 2, 2, false);
-        graph.edge(2, 3, 1, false);
-        graph.edge(3, 1, 2, false);
-        graph.edge(1, 5, 1, false);
-        graph.edge(5, nodeB, 1, false);
-        graph.edge(nodeB, 7, 2, false);
+        GHUtility.setSpeed(60, 0, encoder,
+                graph.edge(4, nodeA).setDistance(1),
+                graph.edge(nodeA, 5).setDistance(2),
+                graph.edge(5, 2).setDistance(2),
+                graph.edge(2, 3).setDistance(1),
+                graph.edge(3, 1).setDistance(2),
+                graph.edge(1, 5).setDistance(1),
+                graph.edge(5, nodeB).setDistance(1),
+                graph.edge(nodeB, 7).setDistance(2));
         setRestriction(nodeA, 5, nodeB);
         graph.freeze();
-        addShortcut(3, 5, 4, 5, 4, 5, 3);
-        addShortcut(5, 3, 2, 3, 2, 3, 3);
-        addShortcut(5, 5, 2, 5, 9, 8, 6);
         setLevelEqualToNodeIdForAllNodes();
+        addShortcut(3, 5, 4, 5, 4, 5, 3, false);
+        addShortcut(3, 5, 2, 3, 2, 3, 3, true);
+        addShortcut(5, 5, 2, 5, 9, 8, 6, false);
 
         testPathCalculation(4, 7, 12, IntArrayList.from(4, nodeA, 5, 2, 3, 1, 5, nodeB, 7));
     }
@@ -593,15 +599,15 @@ public class CHQueryWithTurnCostsTest {
         //     |
         //     |  no right turn at 7 when coming from 4 and no left turn at 7 when coming from 5!
         //     5
-        final EdgeIteratorState e0to1 = graph.edge(0, 1, 2, true);
-        final EdgeIteratorState e1to6 = graph.edge(1, 6, 1, true);
-        final EdgeIteratorState e0to6 = graph.edge(0, 6, 4, true);
-        final EdgeIteratorState e2to6 = graph.edge(2, 6, 5, true);
-        final EdgeIteratorState e2to3 = graph.edge(2, 3, 3, true);
-        final EdgeIteratorState e3to6 = graph.edge(3, 6, 2, true);
-        final EdgeIteratorState e6to7 = graph.edge(7, 6, 1, true);
-        final EdgeIteratorState e4to7 = graph.edge(7, 4, 3, true);
-        final EdgeIteratorState e5to7 = graph.edge(7, 5, 2, true);
+        final EdgeIteratorState e0to1 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 1).setDistance(2));
+        final EdgeIteratorState e1to6 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(1, 6).setDistance(1));
+        final EdgeIteratorState e0to6 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(0, 6).setDistance(4));
+        final EdgeIteratorState e2to6 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(2, 6).setDistance(5));
+        final EdgeIteratorState e2to3 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(2, 3).setDistance(3));
+        final EdgeIteratorState e3to6 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(3, 6).setDistance(2));
+        final EdgeIteratorState e6to7 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(7, 6).setDistance(1));
+        final EdgeIteratorState e4to7 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(7, 4).setDistance(3));
+        final EdgeIteratorState e5to7 = GHUtility.setSpeed(60, true, true, encoder, graph.edge(7, 5).setDistance(2));
 
         setRestriction(e6to7, e1to6, 6);
         setRestriction(e6to7, e2to6, 6);
@@ -614,18 +620,17 @@ public class CHQueryWithTurnCostsTest {
         setRestriction(e5to7, e4to7, 7);
         graph.freeze();
 
-        // contracting node 0 and 1
-        addShortcut(6, 1, 2, 0, 2, 0, 6);
-        addShortcut(6, 6, 2, 1, 9, 1, 7);
-        // contracting node 2 and 3
-        addShortcut(6, 3, 3, 4, 3, 4, 8);
-        addShortcut(6, 6, 3, 5, 11, 5, 10);
+        setLevelEqualToNodeIdForAllNodes();
+        // contracting node 0,1,2,3
+        addShortcut(1, 6, 2, 0, 2, 0, 6, true);
+        addShortcut(3, 6, 3, 4, 3, 4, 8, true);
+        addShortcut(6, 6, 2, 1, 9, 1, 7, false);
+        addShortcut(6, 6, 3, 5, 10, 5, 10, false);
         // contracting node 4 and 5 yields no shortcuts
         // contracting node 6 --> three shortcuts to account for double loop (we nest shortcuts inside each other)
-        addShortcut(7, 6, 6, 1, 6, 10, 8);
-        addShortcut(7, 6, 6, 5, 13, 12, 18);
-        addShortcut(7, 7, 6, 6, 14, 6, 19);
-        setLevelEqualToNodeIdForAllNodes();
+        addShortcut(6, 7, 6, 1, 6, 11, 8, true);
+        addShortcut(6, 7, 6, 5, 13, 12, 18, true);
+        addShortcut(7, 7, 6, 6, 14, 6, 19, false);
 
         testPathCalculation(4, 5, 24, IntArrayList.from(4, 7, 6, 0, 1, 6, 2, 3, 6, 7, 5));
         testPathCalculation(5, 4, 24, IntArrayList.from(5, 7, 6, 0, 1, 6, 2, 3, 6, 7, 4));
@@ -644,31 +649,31 @@ public class CHQueryWithTurnCostsTest {
         //     |
         //     v  no right turn at 6 when coming from 3!
         //     2
-        graph.edge(0, 1, 2, false);
-        graph.edge(1, 5, 1, true);
-        graph.edge(5, 0, 1, false);
-        graph.edge(5, 4, 5, false);
-        graph.edge(5, 6, 3, true);
-        graph.edge(6, 4, 4, true);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(0, 1).setDistance(2));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(1, 5).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(5, 0).setDistance(1));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(5, 4).setDistance(5));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(5, 6).setDistance(3));
+        GHUtility.setSpeed(60, true, true, encoder, graph.edge(6, 4).setDistance(4));
 
-        graph.edge(3, 6, 3, false);
-        graph.edge(6, 2, 4, false);
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(3, 6).setDistance(3));
+        GHUtility.setSpeed(60, true, false, encoder, graph.edge(6, 2).setDistance(4));
         setRestriction(3, 6, 2);
         graph.freeze();
 
+        setLevelEqualToNodeIdForAllNodes();
         // contracting node 0
-        addShortcut(5, 1, 2, 0, 2, 0, 3);
+        addShortcut(1, 5, 2, 0, 2, 0, 3, true);
         // contracting node 1
-        addShortcut(5, 5, 2, 1, 8, 1, 4);
+        addShortcut(5, 5, 2, 1, 8, 1, 4, false);
         // contracting node 2 & 3 does not yield any shortcuts
         // contracting node 4
-        addShortcut(5, 6, 3, 5, 3, 5, 9);
+        addShortcut(5, 6, 3, 5, 3, 5, 9, false);
         // contracting node 5 --> two shortcuts to account for loop (we nest shortcuts inside each other)
-        addShortcut(6, 5, 4, 1, 4, 9, 7);
-        addShortcut(6, 6, 4, 4, 11, 4, 10);
+        addShortcut(5, 6, 4, 1, 4, 9, 7, true);
+        addShortcut(6, 6, 4, 4, 11, 4, 10, false);
         // contracting node 6 --> no more shortcuts
 
-        setLevelEqualToNodeIdForAllNodes();
 
         List<List<Integer>> distMatrix = Arrays.asList(
                 // -1 if no path is expected
@@ -715,8 +720,9 @@ public class CHQueryWithTurnCostsTest {
                 new DijkstraBidirectionEdgeCHNoSOD(new RoutingCHGraphImpl(chGraph));
     }
 
-    private void addShortcut(int from, int to, int firstOrigEdge, int lastOrigEdge, int skipped1, int skipped2, double weight) {
-        chGraph.shortcutEdgeBased(from, to, PrepareEncoder.getScFwdDir(), weight, skipped1, skipped2, firstOrigEdge, lastOrigEdge);
+    private void addShortcut(int from, int to, int firstOrigEdge, int lastOrigEdge, int skipped1, int skipped2, double weight, boolean reverse) {
+        int flags = reverse ? PrepareEncoder.getScBwdDir() : PrepareEncoder.getScFwdDir();
+        chGraph.shortcutEdgeBased(from, to, flags, weight, skipped1, skipped2, firstOrigEdge, lastOrigEdge);
     }
 
     private void setLevelEqualToNodeIdForAllNodes() {

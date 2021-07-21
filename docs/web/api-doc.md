@@ -70,6 +70,22 @@ alternative_route.max_paths         | 2     | If `algorithm=alternative_route` t
 alternative_route.max_weight_factor | 1.4   | If `algorithm=alternative_route` this parameter sets the factor by which the alternatives routes can be longer than the optimal route. Increasing can lead to worse alternatives.
 alternative_route.max_share_factor  | 0.6   | If `algorithm=alternative_route` this parameter specifies how much alternatives routes can have maximum in common with the optimal route. Increasing can lead to worse alternatives.
 
+### Public Transit
+
+Only applicable when profile `pt` is used.
+
+Parameter                  | Default    | Description
+:--------------------------|:-----------|:-----------
+point                      | -          | Specify multiple points for which the route should be calculated. The order is important. Specify at least two points.
+locale                     | en         | The locale of the resulting turn instructions. E.g. `pt_PT` for Portuguese or `de` for German.
+pt.earliest_departure_time | -          | Specify the earliest departure time of the itineraries. In ISO-8601 format `yyyy-MM-ddTHH:mm:ssZ` e.g. `2020-12-30T12:56:00Z`.
+pt.arrive_by               | false      | If true the `pt.earliest_departure_time` parameter is used to define the latest time of arrival of the itineraries.
+pt.profile                 | false      | If true you request a list of all itineraries where each one is the best way to get from A to B, for some departure time within a specified time window. This profile query is also called "range query". The time window is specified via `pt.profile_duration`. Limited to 50 by default, change this via `pt.limit_solutions`.
+pt.profile_duration        | PT60M (1 hour) | The time window for a profile query and so only applicable if `pt.profile` is `true`. Duration string e.g. `PT200S`.
+pt.limit_street_time       | unlimited  | Maximum duration on street for access or egress of public transit i.e. time outside of public transit. Duration string e.g. `PT30M`.
+pt.ignore_transfers        | false      | Specifies if transfers as criterion should be ignored.
+pt.limit_solutions         | unlimited  | The number of maximum solutions that should be searched.
+
 ## Example output for the case `type=json`
 
 Keep in mind that attributes which are not documented here can be removed in the future - 
@@ -93,8 +109,6 @@ paths[0].instructions[0].distance             | The distance for this instructio
 paths[0].instructions[0].time                 | The duration for this instruction, in ms
 paths[0].instructions[0].interval             | An array containing the first and the last index (relative to paths[0].points) of the points for this instruction. This is useful to know for which part of the route the instructions are valid.
 paths[0].instructions[0].sign                 | A number which specifies the sign to show e.g. 2 for a right turn.<br>KEEP_LEFT=-7<br>TURN_SHARP_LEFT = -3<br>TURN_LEFT = -2<br>TURN_SLIGHT_LEFT = -1<br>CONTINUE_ON_STREET = 0<br>TURN_SLIGHT_RIGHT = 1<br>TURN_RIGHT = 2<br>TURN_SHARP_RIGHT = 3<br>FINISH = 4<br>REACHED_VIA = 5<br>USE_ROUNDABOUT = 6<br>KEEP_RIGHT=7<br>implement some default for all other
-paths[0].instructions[0].annotation_text      | [optional] A text describing the instruction in more detail, e.g. like surface of the way, warnings or involved costs
-paths[0].instructions[0].annotation_importance| [optional] 0 stands for INFO, 1 for warning, 2 for costs, 3 for costs and warning
 paths[0].instructions[0].exit_number          | [optional] Only available for USE_ROUNDABOUT instructions. The count of exits at which the route leaves the roundabout.
 paths[0].instructions[0].exited               | [optional] Only available for USE_ROUNDABOUT instructions. True if the roundabout should be exited. False if a via point or end is placed in the roundabout, thus, the roundabout should not be exited due to this instruction.
 paths[0].instructions[0].turn_angle           | [optional] Only available for USE_ROUNDABOUT instructions. The radian of the route within the roundabout: `0 < r < 2*PI` for clockwise and `-2PI < r < 0` for counterclockwise transit. `NaN` if the direction of rotation is undefined.
@@ -224,7 +238,7 @@ HTTP error code | Reason
 
 ## Isochrone
 
-In addition to routing, the end point to obtain an isochrone is `/isochrone`.
+In addition to routing, the end point to obtain an isochrone is `/isochrone`. To get a point list instead of a polygon you can have a look into the /spt endpoint.
 
 [http://localhost:8989/isochrone](http://localhost:8989/isochrone)
 
@@ -233,9 +247,9 @@ All parameters are shown in the following table.
 Parameter                   | Default | Description
 :---------------------------|:--------|:-----------
 profile                     |         | The profile to be used for the isochrone calculation.
-buckets                     | 1       | Number by which to divide the given `time_limit` to create `buckets` nested isochrones of time intervals `time_limit/buckets`, `time_limit/(buckets - 1)`, ... , `time_limit`. Applies analogously to `distance_limit`.
+buckets                     | 1       | Number by which to divide the given `time_limit` to create `buckets` nested isochrones of time intervals `time_limit-n*time_limit/buckets` for `n=[0,buckets)`. Applies analogously to `distance_limit`.
 reverse_flow                | false   | If false the flow goes from point to the polygon, if true the flow goes from the polygon inside to the point. Example usage for false: *How many potential customer can be reached within 30min travel time from your store* vs. true: *How many customers can reach your store within 30min travel time.* (optional, default to false)
 point                       |         | Specify the start coordinate (required). A string organized as `latitude,longitude`.
-result                      | polygon | Can be "pointlist" or "polygon".
 time_limit                  | 600     | Specify which time the vehicle should travel. In seconds. (optional, default to 600)
 distance_limit              | -1      | Specify which distance the vehicle should travel. In meter. (optional, default to -1)
+pt.earliest_departure_time  |         | Specify the earliest departure time of the trip. Only applicable and required when profile `pt` is used. See the public transit section above for more details and other parameters.

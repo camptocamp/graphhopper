@@ -87,7 +87,7 @@ class QueryOverlayBuilder {
                 // check for special case #162 where adj == base and force direction via latitude comparison
                 PointList pl = closestEdge.fetchWayGeometry(FetchMode.PILLAR_ONLY);
                 if (pl.size() > 1)
-                    doReverse = pl.getLatitude(0) > pl.getLatitude(pl.size() - 1);
+                    doReverse = pl.getLat(0) > pl.getLat(pl.size() - 1);
             }
 
             if (doReverse) {
@@ -138,16 +138,16 @@ class QueryOverlayBuilder {
 
                     private double distanceOfSnappedPointToPillarNode(Snap o) {
                         GHPoint snappedPoint = o.getSnappedPoint();
-                        double fromLat = fullPL.getLatitude(o.getWayIndex());
-                        double fromLon = fullPL.getLongitude(o.getWayIndex());
+                        double fromLat = fullPL.getLat(o.getWayIndex());
+                        double fromLon = fullPL.getLon(o.getWayIndex());
                         return DistancePlaneProjection.DIST_PLANE.calcNormalizedDist(fromLat, fromLon, snappedPoint.lat, snappedPoint.lon);
                     }
                 });
 
                 GHPoint3D prevPoint = fullPL.get(0);
                 int adjNode = closestEdge.getAdjNode();
-                int origEdgeKey = GHUtility.createEdgeKey(baseNode, adjNode, closestEdge.getEdge(), false);
-                int origRevEdgeKey = GHUtility.createEdgeKey(baseNode, adjNode, closestEdge.getEdge(), true);
+                int origEdgeKey = closestEdge.getEdgeKey();
+                int origRevEdgeKey = GHUtility.reverseEdgeKey(origEdgeKey);
                 int prevWayIndex = 1;
                 int prevNodeId = baseNode;
                 int virtNodeId = queryOverlay.getVirtualNodes().getSize() + firstVirtualNodeId;
@@ -225,10 +225,10 @@ class QueryOverlayBuilder {
 
         boolean reverse = closestEdge.get(EdgeIteratorState.REVERSE_STATE);
         // edges between base and snapped point
-        VirtualEdgeIteratorState baseEdge = new VirtualEdgeIteratorState(origEdgeKey,
-                virtEdgeId, prevNodeId, nodeId, baseDistance, closestEdge.getFlags(), closestEdge.getName(), basePoints, reverse);
-        VirtualEdgeIteratorState baseReverseEdge = new VirtualEdgeIteratorState(origRevEdgeKey,
-                virtEdgeId, nodeId, prevNodeId, baseDistance, IntsRef.deepCopyOf(closestEdge.getFlags()), closestEdge.getName(), baseReversePoints, !reverse);
+        VirtualEdgeIteratorState baseEdge = new VirtualEdgeIteratorState(origEdgeKey, GHUtility.createEdgeKey(virtEdgeId, false),
+                prevNodeId, nodeId, baseDistance, closestEdge.getFlags(), closestEdge.getName(), basePoints, reverse);
+        VirtualEdgeIteratorState baseReverseEdge = new VirtualEdgeIteratorState(origRevEdgeKey, GHUtility.createEdgeKey(virtEdgeId, true),
+                nodeId, prevNodeId, baseDistance, IntsRef.deepCopyOf(closestEdge.getFlags()), closestEdge.getName(), baseReversePoints, !reverse);
 
         baseEdge.setReverseEdge(baseReverseEdge);
         baseReverseEdge.setReverseEdge(baseEdge);

@@ -19,7 +19,6 @@ package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.routing.ev.*;
-import com.graphhopper.routing.util.spatialrules.TransportationMode;
 import com.graphhopper.routing.weighting.PriorityWeighting;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.PMap;
@@ -70,7 +69,6 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
 
     protected FootFlagEncoder(int speedBits, double speedFactor) {
         super(speedBits, speedFactor, 0);
-        restrictions.addAll(Arrays.asList("foot", "access"));
 
         restrictedValues.add("no");
         restrictedValues.add("restricted");
@@ -97,6 +95,7 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
         absoluteBarriers.add("fence");
         potentialBarriers.add("gate");
         potentialBarriers.add("cattle_grid");
+        potentialBarriers.add("chain");
 
         safeHighwayTags.add("footway");
         safeHighwayTags.add("path");
@@ -137,9 +136,9 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
         allowedSacScale.add("demanding_mountain_hiking");
 
         maxPossibleSpeed = FERRY_SPEED;
-        speedDefault = MEAN_SPEED;
     }
 
+    @Override
     public TransportationMode getTransportationMode() {
         return TransportationMode.FOOT;
     }
@@ -239,7 +238,7 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
             }
         } else {
             priorityFromRelation = PriorityCode.AVOID_IF_POSSIBLE.getValue();
-            double ferrySpeed = getFerrySpeed(way);
+            double ferrySpeed = ferrySpeedCalc.getSpeed(way);
             setSpeed(edgeFlags, true, true, ferrySpeed);
         }
 
@@ -302,19 +301,6 @@ public class FootFlagEncoder extends AbstractFlagEncoder {
             return true;
 
         return PriorityWeighting.class.isAssignableFrom(feature);
-    }
-
-    /*
-     * This method is a current hack, to allow ferries to be actually faster than our current storable maxSpeed.
-     */
-    @Override
-    double getSpeed(boolean reverse, IntsRef edgeFlags) {
-        double speed = super.getSpeed(reverse, edgeFlags);
-        if (speed == getMaxSpeed()) {
-            // We cannot be sure if it was a long or a short trip
-            return SHORT_TRIP_FERRY_SPEED;
-        }
-        return speed;
     }
 
     @Override

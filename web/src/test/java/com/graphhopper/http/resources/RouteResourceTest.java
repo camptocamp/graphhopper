@@ -20,7 +20,6 @@ package com.graphhopper.http.resources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
-import com.graphhopper.GraphHopperAPI;
 import com.graphhopper.ResponsePath;
 import com.graphhopper.api.GraphHopperWeb;
 import com.graphhopper.config.CHProfile;
@@ -29,6 +28,7 @@ import com.graphhopper.http.GraphHopperApplication;
 import com.graphhopper.http.GraphHopperServerConfiguration;
 import com.graphhopper.http.util.GraphHopperServerTestConfiguration;
 import com.graphhopper.routing.ev.RoadClass;
+import com.graphhopper.routing.ev.RoadClassLink;
 import com.graphhopper.routing.ev.RoadEnvironment;
 import com.graphhopper.routing.ev.Surface;
 import com.graphhopper.util.Helper;
@@ -79,7 +79,6 @@ public class RouteResourceTest {
         config.getGraphHopperConfiguration().
                 putObject("profiles_mapbox", mapboxResolver).
                 putObject("graph.flag_encoders", "car").
-                putObject("routing.ch.disabling_allowed", true).
                 putObject("prepare.min_network_size", 0).
                 putObject("datareader.file", "../core/files/andorra.osm.pbf").
                 putObject("graph.encoded_values", "road_class,surface,road_environment,max_speed").
@@ -220,8 +219,7 @@ public class RouteResourceTest {
 
     @Test
     public void testGraphHopperWeb() {
-        GraphHopperWeb hopper = new GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "/route"));
         GHResponse rsp = hopper.route(new GHRequest(42.554851, 1.536198, 42.510071, 1.548128).setProfile("my_car"));
         assertFalse(rsp.hasErrors(), rsp.getErrors().toString());
         assertTrue(rsp.getErrors().isEmpty(), rsp.getErrors().toString());
@@ -250,14 +248,14 @@ public class RouteResourceTest {
 
     @Test
     public void testPathDetailsRoadClass() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb client = new GraphHopperWeb(clientUrl(app, "/route"));
         GHRequest request = new GHRequest(42.546757, 1.528645, 42.520573, 1.557999).setProfile("my_car");
-        request.setPathDetails(Arrays.asList(RoadClass.KEY, Surface.KEY, RoadEnvironment.KEY, "average_speed"));
-        GHResponse rsp = hopper.route(request);
+        request.setPathDetails(Arrays.asList(RoadClass.KEY, Surface.KEY, RoadEnvironment.KEY, "average_speed", RoadClassLink.KEY));
+        GHResponse rsp = client.route(request);
         assertFalse(rsp.hasErrors(), rsp.getErrors().toString());
         assertEquals(4, rsp.getBest().getPathDetails().get(RoadClass.KEY).size());
         assertEquals(RoadClass.PRIMARY.toString(), rsp.getBest().getPathDetails().get(RoadClass.KEY).get(3).getValue());
+        assertFalse((Boolean) rsp.getBest().getPathDetails().get(RoadClassLink.KEY).get(0).getValue());
 
         List<PathDetail> roadEnvList = rsp.getBest().getPathDetails().get(RoadEnvironment.KEY);
         assertEquals(10, roadEnvList.size());
@@ -267,11 +265,10 @@ public class RouteResourceTest {
 
     @Test
     public void testPathDetails() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb client = new GraphHopperWeb(clientUrl(app, "/route"));
         GHRequest request = new GHRequest(42.554851, 1.536198, 42.510071, 1.548128).setProfile("my_car");
         request.setPathDetails(Arrays.asList("average_speed", "edge_id", "time"));
-        GHResponse rsp = hopper.route(request);
+        GHResponse rsp = client.route(request);
         assertFalse(rsp.hasErrors(), rsp.getErrors().toString());
         assertTrue(rsp.getErrors().isEmpty(), rsp.getErrors().toString());
         Map<String, List<PathDetail>> pathDetails = rsp.getBest().getPathDetails();
@@ -305,8 +302,7 @@ public class RouteResourceTest {
 
     @Test
     public void testPathDetailsSamePoint() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "/route"));
         GHRequest request = new GHRequest(42.554851, 1.536198, 42.554851, 1.536198)
                 .setPathDetails(Arrays.asList("average_speed", "edge_id", "time"))
                 .setProfile("my_car");
@@ -317,8 +313,7 @@ public class RouteResourceTest {
 
     @Test
     public void testPathDetailsNoConnection() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "/route"));
         GHRequest request = new GHRequest(42.542078, 1.45586, 42.537841, 1.439981);
         request.setPathDetails(Collections.singletonList("average_speed"));
         request.setProfile("my_car");
@@ -357,8 +352,7 @@ public class RouteResourceTest {
 
     @Test
     public void testInitInstructionsWithTurnDescription() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "/route"));
         GHRequest request = new GHRequest(42.554851, 1.536198, 42.510071, 1.548128);
         request.setProfile("my_car");
         GHResponse rsp = hopper.route(request);
@@ -373,8 +367,7 @@ public class RouteResourceTest {
 
     @Test
     public void testSnapPreventions() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "route"));
         GHRequest request = new GHRequest(42.511139, 1.53285, 42.508165, 1.532271);
         request.setProfile("my_car");
         GHResponse rsp = hopper.route(request);
@@ -388,8 +381,7 @@ public class RouteResourceTest {
 
     @Test
     public void testSnapPreventionsAndPointHints() {
-        GraphHopperAPI hopper = new com.graphhopper.api.GraphHopperWeb();
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "/route"));
         GHRequest request = new GHRequest(42.511139, 1.53285, 42.508165, 1.532271);
         request.setProfile("my_car");
         request.setSnapPreventions(Collections.singletonList("tunnel"));
@@ -428,8 +420,7 @@ public class RouteResourceTest {
     @ParameterizedTest(name = "POST = {0}")
     @ValueSource(booleans = {false, true})
     public void testGraphHopperWebRealExceptions(boolean usePost) {
-        GraphHopperAPI hopper = new GraphHopperWeb().setPostRequest(usePost);
-        assertTrue(hopper.load(clientUrl(app, "/route")));
+        GraphHopperWeb hopper = new GraphHopperWeb(clientUrl(app, "/route")).setPostRequest(usePost);
 
         // this one actually works
         List<GHPoint> points = Arrays.asList(new GHPoint(42.554851, 1.536198), new GHPoint(42.510071, 1.548128));
@@ -509,7 +500,7 @@ public class RouteResourceTest {
         assertEquals(200, response.getStatus());
         String str = response.readEntity(String.class);
         // For backward compatibility we currently export route and track.
-        assertTrue(str.contains("<gh:distance>1841.8</gh:distance>"));
+        assertTrue(str.contains("<gh:distance>1841.5</gh:distance>"), str);
         assertFalse(str.contains("<wpt lat=\"42.51003\" lon=\"1.548188\"> <name>Finish!</name></wpt>"));
         assertTrue(str.contains("<trkpt lat=\"42.554839\" lon=\"1.536374\"><time>"));
     }

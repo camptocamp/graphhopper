@@ -48,7 +48,7 @@ public class GHUtilityTest {
     //   6     \1
     //   ______/
     // 0/
-    Graph initUnsorted(Graph g) {
+    Graph initUnsorted(Graph g, FlagEncoder encoder) {
         NodeAccess na = g.getNodeAccess();
         na.setNode(0, 0, 1);
         na.setNode(1, 2.5, 4.5);
@@ -59,12 +59,12 @@ public class GHUtilityTest {
         na.setNode(6, 2.3, 2.2);
         na.setNode(7, 5, 1.5);
         na.setNode(8, 4.6, 4);
-        g.edge(8, 2, 0.5, true);
-        g.edge(7, 3, 2.1, false);
-        g.edge(1, 0, 3.9, true);
-        g.edge(7, 5, 0.7, true);
-        g.edge(1, 2, 1.9, true);
-        g.edge(8, 1, 2.05, true);
+        GHUtility.setSpeed(60, true, true, encoder, g.edge(8, 2).setDistance(0.5));
+        GHUtility.setSpeed(60, true, false, encoder, g.edge(7, 3).setDistance(2.1));
+        GHUtility.setSpeed(60, true, true, encoder, g.edge(1, 0).setDistance(3.9));
+        GHUtility.setSpeed(60, true, true, encoder, g.edge(7, 5).setDistance(0.7));
+        GHUtility.setSpeed(60, true, true, encoder, g.edge(1, 2).setDistance(1.9));
+        GHUtility.setSpeed(60, true, true, encoder, g.edge(8, 1).setDistance(2.05));
         return g;
     }
 
@@ -83,18 +83,18 @@ public class GHUtilityTest {
 
     @Test
     public void testSort() {
-        Graph g = initUnsorted(createGraph());
+        Graph g = initUnsorted(createGraph(), carEncoder);
         Graph newG = GHUtility.sortDFS(g, createGraph());
         assertEquals(g.getNodes(), newG.getNodes());
         assertEquals(g.getEdges(), newG.getEdges());
         NodeAccess na = newG.getNodeAccess();
-        assertEquals(0, na.getLatitude(0), 1e-4); // 0
-        assertEquals(2.5, na.getLatitude(1), 1e-4); // 1
-        assertEquals(4.5, na.getLatitude(2), 1e-4); // 2
-        assertEquals(4.6, na.getLatitude(3), 1e-4); // 8                
-        assertEquals(3.0, na.getLatitude(4), 1e-4); // 3
-        assertEquals(5.0, na.getLatitude(5), 1e-4); // 7
-        assertEquals(4.2, na.getLatitude(6), 1e-4); // 5
+        assertEquals(0, na.getLat(0), 1e-4); // 0
+        assertEquals(2.5, na.getLat(1), 1e-4); // 1
+        assertEquals(4.5, na.getLat(2), 1e-4); // 2
+        assertEquals(4.6, na.getLat(3), 1e-4); // 8
+        assertEquals(3.0, na.getLat(4), 1e-4); // 3
+        assertEquals(5.0, na.getLat(5), 1e-4); // 7
+        assertEquals(4.2, na.getLat(6), 1e-4); // 5
         assertEquals(getLengthOfAllEdges(g), getLengthOfAllEdges(newG), 1e-4);
 
         // 0 => 1
@@ -117,15 +117,15 @@ public class GHUtilityTest {
         na.setNode(0, 0, 1);
         na.setNode(1, 2.5, 2);
         na.setNode(2, 3.5, 3);
-        g.edge(0, 1, 1.1, false);
-        g.edge(2, 1, 1.1, false);
+        GHUtility.setSpeed(60, true, false, carEncoder, g.edge(0, 1).setDistance(1.1));
+        GHUtility.setSpeed(60, true, false, carEncoder, g.edge(2, 1).setDistance(1.1));
         GHUtility.sortDFS(g, createGraph());
     }
 
     @Test
     public void testCopyWithSelfRef() {
-        Graph g = initUnsorted(createGraph());
-        g.edge(0, 0, 11, true);
+        Graph g = initUnsorted(createGraph(), carEncoder);
+        GHUtility.setSpeed(60, true, true, carEncoder, g.edge(0, 0).setDistance(11));
 
         Graph g2 = new GraphBuilder(encodingManager).create();
         GHUtility.copyTo(g, g2);
@@ -135,8 +135,8 @@ public class GHUtilityTest {
 
     @Test
     public void testCopy() {
-        Graph g = initUnsorted(createGraph());
-        EdgeIteratorState edgeState = g.edge(6, 5, 11, true);
+        Graph g = initUnsorted(createGraph(), carEncoder);
+        EdgeIteratorState edgeState = GHUtility.setSpeed(60, true, true, carEncoder, g.edge(6, 5).setDistance(11));
         edgeState.setWayGeometry(Helper.createPointList(12, 10, -1, 3));
 
         GraphHopperStorage newStore = new GraphBuilder(encodingManager).setCHConfigs(CHConfig.nodeBased("p2", new FastestWeighting(carEncoder))).create();
@@ -148,10 +148,10 @@ public class GHUtilityTest {
         assertEquals(Helper.createPointList(-1, 3, 12, 10), edgeState.fetchWayGeometry(FetchMode.PILLAR_ONLY));
 
         NodeAccess na = lg.getNodeAccess();
-        assertEquals(0, na.getLatitude(0), 1e-6);
-        assertEquals(1, na.getLongitude(0), 1e-6);
-        assertEquals(2.5, na.getLatitude(1), 1e-6);
-        assertEquals(4.5, na.getLongitude(1), 1e-6);
+        assertEquals(0, na.getLat(0), 1e-6);
+        assertEquals(1, na.getLon(0), 1e-6);
+        assertEquals(2.5, na.getLat(1), 1e-6);
+        assertEquals(4.5, na.getLon(1), 1e-6);
         assertEquals(9, lg.getNodes());
         EdgeIterator iter = lg.createEdgeExplorer().setBaseNode(8);
         iter.next();

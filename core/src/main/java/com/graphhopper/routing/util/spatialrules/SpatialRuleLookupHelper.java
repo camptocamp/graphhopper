@@ -18,8 +18,8 @@
 package com.graphhopper.routing.util.spatialrules;
 
 import com.graphhopper.GraphHopper;
-import com.graphhopper.json.geo.JsonFeature;
-import com.graphhopper.json.geo.JsonFeatureCollection;
+import com.graphhopper.util.JsonFeature;
+import com.graphhopper.util.JsonFeatureCollection;
 import com.graphhopper.routing.ev.Country;
 import com.graphhopper.routing.util.parsers.SpatialRuleParser;
 import com.graphhopper.routing.util.parsers.TagParser;
@@ -41,7 +41,7 @@ import java.util.*;
 public class SpatialRuleLookupHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(SpatialRuleLookupHelper.class);
-    static String JSON_ID_FIELD = "ISO_A3";
+    static final String JSON_ID_FIELD = "ISO3166-1:alpha3";
 
     /**
      * This method limits the JsonFeatures to the specified subset

@@ -2,7 +2,7 @@
 
 GraphHopper licensed under the Apache license, Version 2.0
 
-Copyright 2012 - 2017 GraphHopper GmbH
+Copyright 2012 - 2021 GraphHopper GmbH
 
 The core module includes the following software:
 
@@ -17,9 +17,7 @@ The core module includes the following software:
  * com.fasterxml.jackson.core:jackson-annotations (Apache License)
  * org.locationtech:jts (EDL), see #1039
  * AngleCalc.atan2 from Jim Shima, 1999 (public domain)
-
-reader-osm:
-
+ * list of Java keywords in EncodingManager from janino compiler (BSD-3-Clause license)
  * protobuf - New BSD license
  * OSM-binary - LGPL license
  * Osmosis - public domain, see osmosis-copying.txt under core/files
@@ -43,12 +41,6 @@ web:
  * com.fasterxml.jackson.core:jackson-databind (Apache license)
  * com.google.inject (Apache license)
  * some images from mapbox https://www.mapbox.com/maki/, BSD License, see core/files
-
-android:
-
- * android (Apache license)
- * org.mapsforge, LGPL
- * VTM, LGPL
 
 ## Data
 

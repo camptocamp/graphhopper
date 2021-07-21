@@ -22,7 +22,7 @@ package com.graphhopper.util;
  */
 public class FinishInstruction extends Instruction {
     public FinishInstruction(String name, final double lat, final double lon, final double ele) {
-        super(FINISH, name, InstructionAnnotation.EMPTY, new PointList(2, !Double.isNaN(ele)) {
+        super(FINISH, name, new PointList(2, !Double.isNaN(ele)) {
             {
                 add(lat, lon, ele);
             }
@@ -30,7 +30,7 @@ public class FinishInstruction extends Instruction {
     }
 
     public FinishInstruction(final double lat, final double lon, final double ele) {
-        super(FINISH, "", InstructionAnnotation.EMPTY, new PointList(2, !Double.isNaN(ele)) {
+        super(FINISH, "", new PointList(2, !Double.isNaN(ele)) {
             {
                 add(lat, lon, ele);
             }
@@ -38,13 +38,13 @@ public class FinishInstruction extends Instruction {
     }
 
     public FinishInstruction(String name, PointAccess pointAccess, int node) {
-        this(name, pointAccess.getLatitude(node), pointAccess.getLongitude(node),
-                pointAccess.is3D() ? pointAccess.getElevation(node) : Double.NaN);
+        this(name, pointAccess.getLat(node), pointAccess.getLon(node),
+                pointAccess.is3D() ? pointAccess.getEle(node) : Double.NaN);
     }
 
     public FinishInstruction(PointAccess pointAccess, int node) {
-        this(pointAccess.getLatitude(node), pointAccess.getLongitude(node),
-                pointAccess.is3D() ? pointAccess.getElevation(node) : Double.NaN);
+        this(pointAccess.getLat(node), pointAccess.getLon(node),
+                pointAccess.is3D() ? pointAccess.getEle(node) : Double.NaN);
     }
 
     @Override

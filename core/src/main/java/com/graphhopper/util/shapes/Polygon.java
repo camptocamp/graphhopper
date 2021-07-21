@@ -17,12 +17,10 @@
  */
 package com.graphhopper.util.shapes;
 
-import com.graphhopper.storage.GraphEdgeIdFinder;
 import com.graphhopper.util.PointList;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedPolygon;
@@ -41,7 +39,7 @@ public class Polygon implements Shape {
     public final PreparedGeometry prepPolygon;
     public final Envelope envelope;
 
-    public Polygon(PreparedGeometry prepPolygon) {
+    public Polygon(PreparedPolygon prepPolygon) {
         this.prepPolygon = prepPolygon;
         this.envelope = prepPolygon.getGeometry().getEnvelopeInternal();
     }

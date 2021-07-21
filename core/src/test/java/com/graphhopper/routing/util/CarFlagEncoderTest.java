@@ -91,24 +91,6 @@ public class CarFlagEncoderTest {
         assertTrue(encoder.getAccess(way).isWay());
 
         way.clearTags();
-        way.setTag("route", "ferry");
-        assertTrue(encoder.getAccess(way).isFerry());
-        way.setTag("motorcar", "no");
-        assertTrue(encoder.getAccess(way).canSkip());
-
-        way.clearTags();
-        way.setTag("route", "ferry");
-        way.setTag("foot", "yes");
-        assertTrue(encoder.getAccess(way).canSkip());
-
-        way.clearTags();
-        way.setTag("route", "ferry");
-        way.setTag("access", "no");
-        assertTrue(encoder.getAccess(way).canSkip());
-        way.setTag("vehicle", "yes");
-        assertTrue(encoder.getAccess(way).isFerry());
-
-        way.clearTags();
         way.setTag("access", "yes");
         way.setTag("motor_vehicle", "no");
         assertTrue(encoder.getAccess(way).canSkip());
@@ -209,6 +191,14 @@ public class CarFlagEncoderTest {
         assertTrue(accessEnc.getBool(false, flags));
         assertFalse(accessEnc.getBool(true, flags));
         way.clearTags();
+
+        // This is no one way
+        way.setTag("highway", "tertiary");
+        way.setTag("vehicle:backward", "designated");
+        flags = encoder.handleWayTags(em.createEdgeFlags(), way, encoder.getAccess(way));
+        assertTrue(accessEnc.getBool(false, flags));
+        assertTrue(accessEnc.getBool(true, flags));
+        way.clearTags();
     }
 
     @Test
@@ -289,19 +279,6 @@ public class CarFlagEncoderTest {
         assertFalse(accessEnc.getBool(false, edgeFlags));
         assertTrue(accessEnc.getBool(true, edgeFlags));
 
-        encoder.flagsDefault(edgeFlags, true, true);
-        assertTrue(accessEnc.getBool(false, edgeFlags));
-        assertTrue(accessEnc.getBool(true, edgeFlags));
-
-        encoder.flagsDefault(edgeFlags, true, false);
-        assertTrue(accessEnc.getBool(false, edgeFlags));
-        assertFalse(accessEnc.getBool(true, edgeFlags));
-
-        encoder.flagsDefault(edgeFlags, true, true);
-        // disable access
-        accessEnc.setBool(false, edgeFlags, false);
-        accessEnc.setBool(true, edgeFlags, false);
-        assertFalse(accessEnc.getBool(false, edgeFlags));
         accessEnc.setBool(false, edgeFlags, false);
         accessEnc.setBool(true, edgeFlags, false);
         assertFalse(accessEnc.getBool(true, edgeFlags));
@@ -487,8 +464,11 @@ public class CarFlagEncoderTest {
         way.setTag("railway", "tram");
         // but allow tram to be on the same way
         assertTrue(encoder.getAccess(way).isWay());
+    }
 
-        way = new ReaderWay(1);
+    @Test
+    public void testFerry() {
+        ReaderWay way = new ReaderWay(1);
         way.setTag("route", "shuttle_train");
         way.setTag("motorcar", "yes");
         way.setTag("bicycle", "no");
@@ -498,7 +478,7 @@ public class CarFlagEncoderTest {
         // accept
         assertTrue(encoder.getAccess(way).isFerry());
         // calculate speed from estimated_distance and duration
-        assertEquals(61, encoder.getFerrySpeed(way), 1e-1);
+        assertEquals(61, encoder.ferrySpeedCalc.getSpeed(way), 1e-1);
 
         //Test for very short and slow 0.5km/h still realisitic ferry
         way = new ReaderWay(1);
@@ -510,7 +490,7 @@ public class CarFlagEncoderTest {
         // accept
         assertTrue(encoder.getAccess(way).isFerry());
         // We can't store 0.5km/h, but we expect the lowest possible speed (5km/h)
-        assertEquals(2.5, encoder.getFerrySpeed(way), 1e-1);
+        assertEquals(2.5, encoder.ferrySpeedCalc.getSpeed(way), 1e-1);
 
         IntsRef edgeFlags = em.createEdgeFlags();
         avSpeedEnc.setDecimal(false, edgeFlags, 2.5);
@@ -526,7 +506,31 @@ public class CarFlagEncoderTest {
         // accept
         assertTrue(encoder.getAccess(way).isFerry());
         // We have ignored the unrealisitc long duration and take the unknown speed
-        assertEquals(2.5, encoder.getFerrySpeed(way), 1e-1);
+        assertEquals(2.5, encoder.ferrySpeedCalc.getSpeed(way), 1e-1);
+
+        way.clearTags();
+        way.setTag("route", "ferry");
+        assertTrue(encoder.getAccess(way).isFerry());
+        way.setTag("motorcar", "no");
+        assertTrue(encoder.getAccess(way).canSkip());
+
+        way.clearTags();
+        way.setTag("route", "ferry");
+        way.setTag("foot", "yes");
+        assertTrue(encoder.getAccess(way).canSkip());
+
+        way.clearTags();
+        way.setTag("route", "ferry");
+        way.setTag("foot", "designated");
+        way.setTag("motor_vehicle", "designated");
+        assertTrue(encoder.getAccess(way).isFerry());
+
+        way.clearTags();
+        way.setTag("route", "ferry");
+        way.setTag("access", "no");
+        assertTrue(encoder.getAccess(way).canSkip());
+        way.setTag("vehicle", "yes");
+        assertTrue(encoder.getAccess(way).isFerry());
     }
 
     @Test
@@ -574,6 +578,18 @@ public class CarFlagEncoderTest {
         node = new ReaderNode(1, -1, -1);
         node.setTag("barrier", "cattle_grid");
         assertTrue(tmpEncoder.handleNodeTags(node) == 0);
+    }
+
+    @Test
+    public void testChainBarrier() {
+        // by default allow access through the gate for bike & foot!
+        ReaderNode node = new ReaderNode(1, -1, -1);
+        node.setTag("barrier", "chain");
+        assertTrue(encoder.handleNodeTags(node) > 0);
+        node.setTag("motor_vehicle", "no");
+        assertTrue(encoder.handleNodeTags(node) > 0);
+        node.setTag("motor_vehicle", "yes");
+        assertTrue(encoder.handleNodeTags(node) == 0);
     }
 
     @Test
@@ -648,10 +664,11 @@ public class CarFlagEncoderTest {
         way.setTag("estimated_distance", 257);
 
         CarFlagEncoder lowFactorCar = new CarFlagEncoder(10, 1, 0);
+        EncodingManager.create(lowFactorCar);
         List<EncodedValue> list = new ArrayList<>();
         lowFactorCar.setEncodedValueLookup(em);
         lowFactorCar.createEncodedValues(list, "car", 0);
-        assertEquals(2.5, encoder.getFerrySpeed(way), .1);
-        assertEquals(.5, lowFactorCar.getFerrySpeed(way), .1);
+        assertEquals(2.5, encoder.ferrySpeedCalc.getSpeed(way), .1);
+        assertEquals(.5, lowFactorCar.ferrySpeedCalc.getSpeed(way), .1);
     }
 }

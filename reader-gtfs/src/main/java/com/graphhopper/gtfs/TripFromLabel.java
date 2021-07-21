@@ -21,6 +21,9 @@ package com.graphhopper.gtfs;
 import com.conveyal.gtfs.GTFSFeed;
 import com.conveyal.gtfs.model.Stop;
 import com.conveyal.gtfs.model.StopTime;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
 import com.graphhopper.ResponsePath;
@@ -35,6 +38,7 @@ import com.graphhopper.util.*;
 import com.graphhopper.util.details.PathDetail;
 import com.graphhopper.util.details.PathDetailsBuilderFactory;
 import com.graphhopper.util.details.PathDetailsFromEdges;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -90,6 +94,7 @@ class TripFromLabel {
 
         final InstructionList instructions = new InstructionList(tr);
         final PointList pointsList = new PointList();
+        Map<String, List<PathDetail>> pathDetails = new HashMap<>();
         for (int i = 0; i < path.getLegs().size(); ++i) {
             Trip.Leg leg = path.getLegs().get(i);
             if (leg instanceof Trip.WalkLeg) {
@@ -100,13 +105,14 @@ class TripFromLabel {
                     pointsList.add(instruction.getPoints());
                 }
                 instructions.addAll(theseInstructions);
-                path.addPathDetails(shift(((Trip.WalkLeg) leg).details, previousPointsCount));
+                Map<String, List<PathDetail>> shiftedLegPathDetails = shift(((Trip.WalkLeg) leg).details, previousPointsCount);
+                shiftedLegPathDetails.forEach((k, v) -> pathDetails.merge(k, shiftedLegPathDetails.get(k), (a,b) -> Lists.newArrayList(Iterables.concat(a, b))));
             } else if (leg instanceof Trip.PtLeg) {
                 final Trip.PtLeg ptLeg = ((Trip.PtLeg) leg);
                 final PointList pl;
                 if (!ptLeg.isInSameVehicleAsPrevious) {
                     pl = new PointList();
-                    final Instruction departureInstruction = new Instruction(Instruction.PT_START_TRIP, ptLeg.trip_headsign, InstructionAnnotation.EMPTY, pl);
+                    final Instruction departureInstruction = new Instruction(Instruction.PT_START_TRIP, ptLeg.trip_headsign, pl);
                     departureInstruction.setDistance(leg.getDistance());
                     departureInstruction.setTime(ptLeg.travelTime);
                     instructions.add(departureInstruction);
@@ -123,7 +129,7 @@ class TripFromLabel {
                 final Trip.Stop arrivalStop = ptLeg.stops.get(ptLeg.stops.size() - 1);
                 arrivalPointList.add(arrivalStop.geometry.getY(), arrivalStop.geometry.getX());
                 pointsList.add(arrivalStop.geometry.getY(), arrivalStop.geometry.getX());
-                Instruction arrivalInstruction = new Instruction(Instruction.PT_END_TRIP, arrivalStop.stop_name, InstructionAnnotation.EMPTY, arrivalPointList);
+                Instruction arrivalInstruction = new Instruction(Instruction.PT_END_TRIP, arrivalStop.stop_name, arrivalPointList);
                 if (ptLeg.isInSameVehicleAsPrevious) {
                     instructions.set(instructions.size() - 1, arrivalInstruction);
                 } else {
@@ -133,6 +139,7 @@ class TripFromLabel {
         }
         path.setInstructions(instructions);
         path.setPoints(pointsList);
+        path.addPathDetails(pathDetails);
         path.setDistance(path.getLegs().stream().mapToDouble(Trip.Leg::getDistance).sum());
         path.setTime((legs.get(legs.size() - 1).getArrivalTime().toInstant().toEpochMilli() - legs.get(0).getDepartureTime().toInstant().toEpochMilli()));
         path.setNumChanges((int) path.getLegs().stream()
@@ -151,7 +158,7 @@ class TripFromLabel {
                             .map(leg -> (Trip.PtLeg) leg)
                             .map(ptLeg -> {
                                 final GTFSFeed gtfsFeed = gtfsStorage.getGtfsFeeds().get(ptLeg.feed_id);
-                                return new com.graphhopper.gtfs.fare.Trip.Segment(ptLeg.route_id,
+                                return new com.graphhopper.gtfs.fare.Trip.Segment(ptLeg.feed_id, ptLeg.route_id,
                                         Duration.between(firstPtDepartureTime, GtfsHelper.localDateTimeFromDate(ptLeg.getDepartureTime())).getSeconds(),
                                         gtfsFeed.stops.get(ptLeg.stops.get(0).stop_id).zone_id, gtfsFeed.stops.get(ptLeg.stops.get(ptLeg.stops.size() - 1).stop_id).zone_id,
                                         ptLeg.stops.stream().map(s -> gtfsFeed.stops.get(s.stop_id).zone_id).collect(Collectors.toSet()));
@@ -164,13 +171,12 @@ class TripFromLabel {
     }
 
     private Map<String, List<PathDetail>> shift(Map<String, List<PathDetail>> pathDetailss, int previousPointsCount) {
-        for (List<PathDetail> pathDetails : pathDetailss.values()) {
-            for (PathDetail pathDetail : pathDetails) {
-                pathDetail.setFirst(pathDetail.getFirst() + previousPointsCount);
-                pathDetail.setLast(pathDetail.getLast() + previousPointsCount);
-            }
-        }
-        return pathDetailss;
+        return Maps.transformEntries(pathDetailss, (s, pathDetails) -> pathDetails.stream().map(p -> {
+            PathDetail pathDetail = new PathDetail(p.getValue());
+            pathDetail.setFirst(p.getFirst() + previousPointsCount);
+            pathDetail.setLast(p.getLast() + previousPointsCount);
+            return pathDetail;
+        }).collect(Collectors.toList()));
     }
 
     private List<Trip.Leg> buildLegs(Translation tr, Graph queryGraph, Weighting weighting, List<Label.Transition> path, List<String> requestedPathDetails) {
@@ -373,7 +379,7 @@ class TripFromLabel {
         } else {
             InstructionList instructions = new InstructionList(tr);
             InstructionsFromEdges instructionsFromEdges = new InstructionsFromEdges(graph,
-                    weighting, weighting.getFlagEncoder(), tr, instructions);
+                    weighting, weighting.getFlagEncoder(), instructions);
             int prevEdgeId = -1;
             for (int i = 1; i < path.size(); i++) {
                 if (path.get(i).edge.edgeType != GtfsStorage.EdgeType.HIGHWAY) {

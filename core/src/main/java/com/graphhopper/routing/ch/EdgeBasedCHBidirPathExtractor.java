@@ -18,18 +18,17 @@
 
 package com.graphhopper.routing.ch;
 
-import com.graphhopper.routing.BidirPathExtractor;
+import com.graphhopper.routing.DefaultBidirPathExtractor;
 import com.graphhopper.routing.SPTEntry;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.RoutingCHGraph;
 import com.graphhopper.util.EdgeIterator;
-import com.graphhopper.util.EdgeIteratorState;
 import com.graphhopper.util.GHUtility;
 
 /**
  * @author easbar
  */
-public class EdgeBasedCHBidirPathExtractor extends BidirPathExtractor {
+public class EdgeBasedCHBidirPathExtractor extends DefaultBidirPathExtractor {
     private final RoutingCHGraph routingGraph;
     private final ShortcutUnpacker shortcutUnpacker;
     private final Weighting weighting;
@@ -60,13 +59,10 @@ public class EdgeBasedCHBidirPathExtractor extends BidirPathExtractor {
     }
 
     private ShortcutUnpacker createShortcutUnpacker() {
-        return new ShortcutUnpacker(routingGraph, new ShortcutUnpacker.Visitor() {
-            @Override
-            public void visit(EdgeIteratorState edge, boolean reverse, int prevOrNextEdgeId) {
-                path.addDistance(edge.getDistance());
-                path.addTime(GHUtility.calcMillisWithTurnMillis(weighting, edge, reverse, prevOrNextEdgeId));
-                path.addEdge(edge.getEdge());
-            }
+        return new ShortcutUnpacker(routingGraph, (edge, reverse, prevOrNextEdgeId) -> {
+            path.addDistance(edge.getDistance());
+            path.addTime(GHUtility.calcMillisWithTurnMillis(weighting, edge, reverse, prevOrNextEdgeId));
+            path.addEdge(edge.getEdge());
         }, true);
     }
 

@@ -20,7 +20,6 @@ package com.graphhopper.routing.util;
 import com.graphhopper.reader.ReaderWay;
 import com.graphhopper.routing.ev.EncodedValue;
 import com.graphhopper.routing.ev.UnsignedDecimalEncodedValue;
-import com.graphhopper.routing.util.spatialrules.TransportationMode;
 import com.graphhopper.storage.IntsRef;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.PMap;
@@ -61,7 +60,6 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
                 properties.getDouble("speed_factor", 5),
                 properties.getInt("max_turn_costs", properties.getBool("turn_costs", false) ? 1 : 0));
 
-        restrictions.addAll(Arrays.asList("motorcar", "motor_vehicle", "vehicle", "access"));
         restrictedValues.add("agricultural");
         restrictedValues.add("forestry");
         restrictedValues.add("no");
@@ -77,6 +75,7 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
         setSpeedTwoDirections(properties.getBool("speed_two_directions", false));
 
         intendedValues.add("yes");
+        intendedValues.add("designated");
         intendedValues.add("permissive");
 
         potentialBarriers.add("gate");
@@ -84,6 +83,7 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
         potentialBarriers.add("kissing_gate");
         potentialBarriers.add("swing_gate");
         potentialBarriers.add("cattle_grid");
+        potentialBarriers.add("chain");
 
         absoluteBarriers.add("fence");
         absoluteBarriers.add("bollard");
@@ -140,7 +140,6 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
         // limit speed on bad surfaces to 30 km/h
         badSurfaceSpeed = 30;
         maxPossibleSpeed = 140;
-        speedDefault = defaultSpeedMap.get("secondary");
     }
 
     public CarFlagEncoder setSpeedTwoDirections(boolean value) {
@@ -148,8 +147,9 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
         return this;
     }
 
+    @Override
     public TransportationMode getTransportationMode() {
-        return TransportationMode.MOTOR_VEHICLE;
+        return TransportationMode.CAR;
     }
 
     @Override
@@ -261,7 +261,7 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
             }
 
         } else {
-            double ferrySpeed = getFerrySpeed(way);
+            double ferrySpeed = ferrySpeedCalc.getSpeed(way);
             accessEnc.setBool(false, edgeFlags, true);
             accessEnc.setBool(true, edgeFlags, true);
             setSpeed(false, edgeFlags, ferrySpeed);
@@ -277,8 +277,8 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
      */
     protected boolean isBackwardOneway(ReaderWay way) {
         return way.hasTag("oneway", "-1")
-                || way.hasTag("vehicle:forward", "no")
-                || way.hasTag("motor_vehicle:forward", "no");
+                || way.hasTag("vehicle:forward", restrictedValues)
+                || way.hasTag("motor_vehicle:forward", restrictedValues);
     }
 
     /**
@@ -286,16 +286,16 @@ public class CarFlagEncoder extends AbstractFlagEncoder {
      */
     protected boolean isForwardOneway(ReaderWay way) {
         return !way.hasTag("oneway", "-1")
-                && !way.hasTag("vehicle:forward", "no")
-                && !way.hasTag("motor_vehicle:forward", "no");
+                && !way.hasTag("vehicle:forward", restrictedValues)
+                && !way.hasTag("motor_vehicle:forward", restrictedValues);
     }
 
     protected boolean isOneway(ReaderWay way) {
         return way.hasTag("oneway", oneways)
-                || way.hasTag("vehicle:backward")
-                || way.hasTag("vehicle:forward")
-                || way.hasTag("motor_vehicle:backward")
-                || way.hasTag("motor_vehicle:forward");
+                || way.hasTag("vehicle:backward", restrictedValues)
+                || way.hasTag("vehicle:forward", restrictedValues)
+                || way.hasTag("motor_vehicle:backward", restrictedValues)
+                || way.hasTag("motor_vehicle:forward", restrictedValues);
     }
 
     /**

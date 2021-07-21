@@ -7,7 +7,10 @@ import com.graphhopper.isochrone.algorithm.ShortestPathTree;
 import com.graphhopper.routing.ProfileResolver;
 import com.graphhopper.routing.ev.*;
 import com.graphhopper.routing.querygraph.QueryGraph;
-import com.graphhopper.routing.util.*;
+import com.graphhopper.routing.util.DefaultSnapFilter;
+import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.util.FiniteWeightFilter;
+import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.BlockAreaWeighting;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
@@ -35,6 +38,7 @@ import java.io.Writer;
 import java.util.*;
 
 import static com.graphhopper.resources.RouteResource.errorIfLegacyParameters;
+import static com.graphhopper.resources.RouteResource.removeLegacyParameters;
 import static com.graphhopper.routing.util.TraversalMode.EDGE_BASED;
 import static com.graphhopper.routing.util.TraversalMode.NODE_BASED;
 
@@ -66,7 +70,7 @@ public class SPTResource {
     }
 
     // Annotating this as application/json because errors come out as json, and
-    // IllegalArgumentExceptions are not mapped to a fixed mediatype, because in RouteRessource, it could be GPX.
+    // IllegalArgumentExceptions are not mapped to a fixed mediatype, because in RouteResource, it could be GPX.
     @GET
     @Produces({"text/csv", "application/json"})
     public Response doGet(
@@ -84,29 +88,27 @@ public class SPTResource {
         hintsMap.putObject(Parameters.Landmark.DISABLE, true);
         if (Helper.isEmpty(profileName)) {
             profileName = profileResolver.resolveProfile(hintsMap).getName();
-            hintsMap.remove("weighting");
-            hintsMap.remove("vehicle");
+            removeLegacyParameters(hintsMap);
         }
+
         errorIfLegacyParameters(hintsMap);
         Profile profile = graphHopper.getProfile(profileName);
-        if (profile == null) {
+        if (profile == null)
             throw new IllegalArgumentException("The requested profile '" + profileName + "' does not exist");
-        }
-        FlagEncoder encoder = encodingManager.getEncoder(profile.getVehicle());
-        EdgeFilter edgeFilter = DefaultEdgeFilter.allEdges(encoder);
         LocationIndex locationIndex = graphHopper.getLocationIndex();
-        Snap snap = locationIndex.findClosest(point.get().lat, point.get().lon, edgeFilter);
+        Graph graph = graphHopper.getGraphHopperStorage();
+        Weighting weighting = graphHopper.createWeighting(profile, hintsMap);
+        BooleanEncodedValue inSubnetworkEnc = graphHopper.getEncodingManager().getBooleanEncodedValue(Subnetwork.key(profileName));
+        if (hintsMap.has(Parameters.Routing.BLOCK_AREA)) {
+            GraphEdgeIdFinder.BlockArea blockArea = GraphEdgeIdFinder.createBlockArea(graph, locationIndex,
+                    Collections.singletonList(point.get()), hintsMap, new FiniteWeightFilter(weighting));
+            weighting = new BlockAreaWeighting(weighting, blockArea);
+        }
+        Snap snap = locationIndex.findClosest(point.get().lat, point.get().lon, new DefaultSnapFilter(weighting, inSubnetworkEnc));
         if (!snap.isValid())
             throw new IllegalArgumentException("Point not found:" + point);
-
-        Graph graph = graphHopper.getGraphHopperStorage();
         QueryGraph queryGraph = QueryGraph.create(graph, snap);
         NodeAccess nodeAccess = queryGraph.getNodeAccess();
-
-        Weighting weighting = graphHopper.createWeighting(profile, hintsMap);
-        if (hintsMap.has(Parameters.Routing.BLOCK_AREA))
-            weighting = new BlockAreaWeighting(weighting, GraphEdgeIdFinder.createBlockArea(graph, locationIndex,
-                    Collections.singletonList(point.get()), hintsMap, DefaultEdgeFilter.allEdges(encoder)));
         TraversalMode traversalMode = profile.isTurnCosts() ? EDGE_BASED : NODE_BASED;
         ShortestPathTree shortestPathTree = new ShortestPathTree(queryGraph, weighting, reverseFlow, traversalMode);
 
@@ -177,16 +179,16 @@ public class SPTResource {
                                 sb.append(label.prevCoordinate == null ? 0 : label.prevTimeMillis);
                                 continue;
                             case "longitude":
-                                sb.append(label.coordinate.lon);
+                                sb.append(Helper.round6(label.coordinate.lon));
                                 continue;
                             case "prev_longitude":
-                                sb.append(label.prevCoordinate == null ? null : label.prevCoordinate.lon);
+                                sb.append(label.prevCoordinate == null ? null : Helper.round6(label.prevCoordinate.lon));
                                 continue;
                             case "latitude":
-                                sb.append(label.coordinate.lat);
+                                sb.append(Helper.round6(label.coordinate.lat));
                                 continue;
                             case "prev_latitude":
-                                sb.append(label.prevCoordinate == null ? null : label.prevCoordinate.lat);
+                                sb.append(label.prevCoordinate == null ? null : Helper.round6(label.prevCoordinate.lat));
                                 continue;
                         }
 
@@ -237,8 +239,8 @@ public class SPTResource {
     }
 
     private IsoLabelWithCoordinates isoLabelWithCoordinates(NodeAccess na, ShortestPathTree.IsoLabel label) {
-        double lat = na.getLatitude(label.node);
-        double lon = na.getLongitude(label.node);
+        double lat = na.getLat(label.node);
+        double lon = na.getLon(label.node);
         IsoLabelWithCoordinates isoLabelWC = new IsoLabelWithCoordinates();
         isoLabelWC.nodeId = label.node;
         isoLabelWC.coordinate = new GHPoint(lat, lon);
@@ -248,8 +250,8 @@ public class SPTResource {
         if (label.parent != null) {
             ShortestPathTree.IsoLabel prevLabel = label.parent;
             int prevNodeId = prevLabel.node;
-            double prevLat = na.getLatitude(prevNodeId);
-            double prevLon = na.getLongitude(prevNodeId);
+            double prevLat = na.getLat(prevNodeId);
+            double prevLon = na.getLon(prevNodeId);
             isoLabelWC.prevNodeId = prevNodeId;
             isoLabelWC.prevEdgeId = prevLabel.edge;
             isoLabelWC.prevCoordinate = new GHPoint(prevLat, prevLon);
