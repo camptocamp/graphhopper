@@ -81,6 +81,11 @@ public abstract class SchmFlagEncoder extends AbstractFlagEncoder {
     }
 
     @Override
+    public TransportationMode getTransportationMode() {
+        return TransportationMode.FOOT;
+    }
+
+    @Override
     public String toString() {
         return "schm";
     }

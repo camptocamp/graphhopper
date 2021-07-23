@@ -495,7 +495,12 @@ public class OSMReader implements TurnCostParser.ExternalInternalMap {
 
         double lat = node.getLat();
         double lon = node.getLon();
-        double ele = eleProvider.getEle(lat, lon);
+        double ele;
+        if (eleProvider instanceof OSMNodeElevationProvider) {
+            ele = Double.parseDouble(node.getTag("ele"));
+        } else {
+            ele = eleProvider.getEle(lat, lon);
+        }
         if (nodeType == TOWER_NODE) {
             addTowerNode(node.getId(), lat, lon, ele);
         } else if (nodeType == PILLAR_NODE) {
@@ -516,13 +521,6 @@ public class OSMReader implements TurnCostParser.ExternalInternalMap {
                 return true;
         }
         return false;
-    }
-
-    protected double getElevation(ReaderNode node) {
-        if (eleProvider instanceof OSMNodeElevationProvider) {
-            return Double.parseDouble(node.getTag("ele"));
-        }
-        return eleProvider.getEle(node.getLat(), node.getLon());
     }
 
     void prepareWaysWithRelationInfo(ReaderRelation osmRelation) {

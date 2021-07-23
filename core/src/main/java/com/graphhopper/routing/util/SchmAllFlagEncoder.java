@@ -49,9 +49,4 @@ public class SchmAllFlagEncoder extends SchmFlagEncoder {
     public String toString() {
         return "schmall";
     }
-
-    @Override
-    public TransportationMode getTransportationMode() {
-        return TransportationMode.OTHER;
-    }
 }
