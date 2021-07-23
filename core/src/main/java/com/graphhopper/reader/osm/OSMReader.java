@@ -371,7 +371,7 @@ public class OSMReader implements TurnCostParser.ExternalInternalMap {
                         if (lastBarrier < 0)
                             lastBarrier = 0;
 
-                        // add way up to barrier shadow node                        
+                        // add way up to barrier shadow node
                         int length = i - lastBarrier + 1;
                         LongArrayList partNodeIds = new LongArrayList();
                         partNodeIds.add(osmNodeIds.buffer, lastBarrier, length);
@@ -520,7 +520,7 @@ public class OSMReader implements TurnCostParser.ExternalInternalMap {
 
     protected double getElevation(ReaderNode node) {
         if (eleProvider instanceof OSMNodeElevationProvider) {
-            return node.getEle();
+            return Double.parseDouble(node.getTag("ele"));
         }
         return eleProvider.getEle(node.getLat(), node.getLon());
     }
@@ -696,7 +696,7 @@ public class OSMReader implements TurnCostParser.ExternalInternalMap {
         double towerNodeDistance = distCalc.calcDistance(pointList);
 
         if (towerNodeDistance < 0.001) {
-            // As investigation shows often two paths should have crossed via one identical point 
+            // As investigation shows often two paths should have crossed via one identical point
             // but end up in two very close points.
             zeroCounter++;
             towerNodeDistance = 0.001;
@@ -709,7 +709,7 @@ public class OSMReader implements TurnCostParser.ExternalInternalMap {
         }
 
         if (Double.isInfinite(towerNodeDistance) || towerNodeDistance > maxDistance) {
-            // Too large is very rare and often the wrong tagging. See #435 
+            // Too large is very rare and often the wrong tagging. See #435
             // so we can avoid the complexity of splitting the way for now (new towernodes would be required, splitting up geometry etc)
             LOGGER.warn("Bug in OSM or GraphHopper. Too big tower node distance " + towerNodeDistance + " reset to large value, osm way " + wayOsmId);
             towerNodeDistance = maxDistance;

@@ -18,7 +18,6 @@
 package com.graphhopper.routing.util;
 
 import com.graphhopper.reader.ReaderWay;
-import com.graphhopper.routing.util.spatialrules.TransportationMode;
 import com.graphhopper.util.PMap;
 
 
@@ -57,6 +56,6 @@ public class SchmVeloFlagEncoder extends SchmFlagEncoder {
 
     @Override
     public TransportationMode getTransportationMode() {
-        return TransportationMode.BICYCLE;
+        return TransportationMode.BIKE;
     }
 }
