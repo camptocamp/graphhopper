@@ -18,6 +18,7 @@ jobs:
       matrix:
         branch:
           - release_2.3
+          - release_3.0
 
     steps:
       - uses: actions/checkout@v2
