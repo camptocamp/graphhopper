@@ -693,6 +693,8 @@ public class GraphHopper {
             elevationProvider = new MultiSourceElevationProvider(cacheDirStr);
         } else if (eleProviderStr.equalsIgnoreCase("skadi")) {
             elevationProvider = new SkadiProvider(cacheDirStr);
+        } else if (eleProviderStr.equalsIgnoreCase("osmnode")) {
+            elevationProvider = new OSMNodeElevationProvider();
         }
 
         if (elevationProvider instanceof TileBasedElevationProvider) {

@@ -60,6 +60,24 @@ public class DefaultVehicleEncodedValuesFactory implements VehicleEncodedValuesF
         if (name.equals(WHEELCHAIR))
             return VehicleEncodedValues.wheelchair(configuration);
 
+        if (name.equals(SCHMWANDER))
+            return VehicleEncodedValues.schmwander(configuration);
+
+        if (name.equals(SCHMVELO))
+            return VehicleEncodedValues.schmvelo(configuration);
+
+        if (name.equals(SCHMNEUTRAL))
+            return VehicleEncodedValues.schmneutral(configuration);
+
+        if (name.equals(SCHMSKATING))
+            return VehicleEncodedValues.schmskating(configuration);
+
+        if (name.equals(SCHMMTB))
+            return VehicleEncodedValues.schmmtb(configuration);
+
+        if (name.equals(SCHMALL))
+            return VehicleEncodedValues.schmall(configuration);
+
         throw new IllegalArgumentException("entry in vehicle list not supported: " + name);
     }
 }

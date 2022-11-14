@@ -1,0 +1,22 @@
+FROM debian:bullseye-slim
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends unzip wget curl maven openjdk-11-jdk-headless openjdk-11-jre-headless \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /data && mkdir -p /graphhopper
+
+COPY . /graphhopper/
+
+WORKDIR /graphhopper
+
+# Disable maven progress bar
+ENV MAVEN_OPTS=-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+RUN mvn clean install -DskipTests
+RUN mvn test -Dtest=SchmFlagEncoderTest#test* -DfailIfNoTests=false
+
+EXPOSE 8989
+
+CMD [ "echo Should call something like ./graphhopper.sh -a import -f some_osm.pbf" ]

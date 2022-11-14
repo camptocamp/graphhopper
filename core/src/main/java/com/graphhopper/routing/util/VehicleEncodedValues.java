@@ -93,6 +93,30 @@ public class VehicleEncodedValues {
         return bike(new PMap(properties).putObject("name", properties.getString("name", "mtb")));
     }
 
+    public static VehicleEncodedValues schmwander(PMap properties) {
+        return foot(new PMap(properties).putObject("name", properties.getString("name", "schmwander")));
+    }
+
+    public static VehicleEncodedValues schmvelo(PMap properties) {
+        return foot(new PMap(properties).putObject("name", properties.getString("name", "schmvelo")));
+    }
+
+    public static VehicleEncodedValues schmskating(PMap properties) {
+        return foot(new PMap(properties).putObject("name", properties.getString("name", "schmskating")));
+    }
+
+    public static VehicleEncodedValues schmneutral(PMap properties) {
+        return foot(new PMap(properties).putObject("name", properties.getString("name", "schmneutral")));
+    }
+
+    public static VehicleEncodedValues schmmtb(PMap properties) {
+        return foot(new PMap(properties).putObject("name", properties.getString("name", "schmmtb")));
+    }
+
+    public static VehicleEncodedValues schmall(PMap properties) {
+        return foot(new PMap(properties).putObject("name", properties.getString("name", "schmall")));
+    }
+
     public static VehicleEncodedValues car(PMap properties) {
         String name = properties.getString("name", "car");
         int speedBits = properties.getInt("speed_bits", 5);

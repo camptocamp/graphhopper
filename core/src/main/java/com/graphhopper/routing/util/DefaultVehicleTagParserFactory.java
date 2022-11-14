@@ -45,6 +45,18 @@ public class DefaultVehicleTagParserFactory implements VehicleTagParserFactory {
             return new MotorcycleTagParser(lookup, configuration);
         if (name.equals(WHEELCHAIR))
             return new WheelchairTagParser(lookup, configuration);
+        if (name.equals(SCHMWANDER))
+            return new SchmWanderFlagEncoder(lookup, configuration);
+        if (name.equals(SCHMVELO))
+            return new SchmVeloFlagEncoder(lookup, configuration);
+        if (name.equals(SCHMNEUTRAL))
+            return new SchmNeutralFlagEncoder(lookup, configuration);
+        if (name.equals(SCHMSKATING))
+            return new SchmSkatingFlagEncoder(lookup, configuration);
+        if (name.equals(SCHMMTB))
+            return new SchmMtbFlagEncoder(lookup, configuration);
+        if (name.equals(SCHMALL))
+            return new SchmAllFlagEncoder(lookup, configuration);
 
         throw new IllegalArgumentException("Unknown name for vehicle tag parser: " + name);
     }

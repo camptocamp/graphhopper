@@ -15,31 +15,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.graphhopper.routing.util;
+package com.graphhopper.reader.dem;
 
-import com.graphhopper.util.PMap;
+import com.graphhopper.reader.ReaderNode;
 
-/**
- * @author Peter Karich
- */
-public interface VehicleEncodedValuesFactory {
-    String ROADS = "roads";
-    String CAR = "car";
-    String BIKE = "bike";
-    String BIKE2 = "bike2";
-    String RACINGBIKE = "racingbike";
-    String MOUNTAINBIKE = "mtb";
-    String FOOT = "foot";
-    String HIKE = "hike";
-    String MOTORCYCLE = "motorcycle";
-    String WHEELCHAIR = "wheelchair";
-    String SCHMWANDER = "schmwander";
-    String SCHMVELO = "schmvelo";
-    String SCHMSKATING = "schmskating";
-    String SCHMNEUTRAL = "schmneutral";
-    String SCHMMTB = "schmmtb";
-    String SCHMALL = "schmall";
+public class OSMNodeElevationProvider implements ElevationProvider {
 
-    VehicleEncodedValues createVehicleEncodedValues(String name, PMap configuration);
+  @Override
+  public double getEle(double lat, double lon) {
+    throw new RuntimeException("Should not be called");
+  }
+
+  @Override
+  public double getEle(ReaderNode node) {
+    return Double.parseDouble(node.getTag("ele"));
+  }
+
+  @Override
+  public boolean canInterpolate() {
+      return false;
+  }
+
+  @Override
+  public void release() {
+  }
 
 }

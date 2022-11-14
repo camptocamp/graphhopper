@@ -17,29 +17,26 @@
  */
 package com.graphhopper.routing.util;
 
+import com.graphhopper.reader.ReaderWay;
+import com.graphhopper.routing.ev.EncodedValueLookup;
 import com.graphhopper.util.PMap;
 
+
 /**
- * @author Peter Karich
+ * @author Guillaume Beraudo
  */
-public interface VehicleEncodedValuesFactory {
-    String ROADS = "roads";
-    String CAR = "car";
-    String BIKE = "bike";
-    String BIKE2 = "bike2";
-    String RACINGBIKE = "racingbike";
-    String MOUNTAINBIKE = "mtb";
-    String FOOT = "foot";
-    String HIKE = "hike";
-    String MOTORCYCLE = "motorcycle";
-    String WHEELCHAIR = "wheelchair";
-    String SCHMWANDER = "schmwander";
-    String SCHMVELO = "schmvelo";
-    String SCHMSKATING = "schmskating";
-    String SCHMNEUTRAL = "schmneutral";
-    String SCHMMTB = "schmmtb";
-    String SCHMALL = "schmall";
+public class SchmMtbFlagEncoder extends SchmFlagEncoder {
 
-    VehicleEncodedValues createVehicleEncodedValues(String name, PMap configuration);
+    public SchmMtbFlagEncoder(EncodedValueLookup lookup, PMap properties) {
+        super(lookup, properties, "schmmtb");
+    }
 
+    @Override
+    protected double getSpeed(ReaderWay way) {
+        String land = way.getTag("land") ;
+        if ("mtb".equals(land)) {
+            return 10;
+        }
+        return 1;
+    }
 }
