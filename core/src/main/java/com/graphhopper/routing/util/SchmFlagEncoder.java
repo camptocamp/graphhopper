@@ -27,20 +27,23 @@ import com.graphhopper.util.PMap;
  *
  * @author Guillaume Beraudo
  */
-public abstract class SchmFlagEncoder extends VehicleTagParser {
+public class SchmFlagEncoder extends VehicleTagParser {
 
     public SchmFlagEncoder(EncodedValueLookup lookup, PMap properties, String name) {
         this(
+            lookup.getBooleanEncodedValue(VehicleAccess.key(properties.getString("name", name))),
             lookup.getDecimalEncodedValue(VehicleSpeed.key(properties.getString("name", name))),
             name
         );
     }
 
-    protected SchmFlagEncoder(DecimalEncodedValue speedEnc, String name) {
-        super(null, speedEnc, name, null, null, TransportationMode.FOOT, 100);
+    protected SchmFlagEncoder(BooleanEncodedValue accessEnc, DecimalEncodedValue speedEnc, String name) {
+        super(accessEnc, speedEnc, name, null, null, TransportationMode.FOOT, 100);
     }
 
-    protected abstract double getSpeed(ReaderWay way);
+    protected double getSpeed(ReaderWay way) {
+        throw new RuntimeException("Should be implemented in subclass");
+    };
 
     @Override
     public WayAccess getAccess(ReaderWay way) {
@@ -55,9 +58,17 @@ public abstract class SchmFlagEncoder extends VehicleTagParser {
     @Override
     public IntsRef handleWayTags(IntsRef edgeFlags, ReaderWay way) {
         double speed = getSpeed(way);
-        avgSpeedEnc.setDecimal(false, edgeFlags, speed);
+        // always allow access
         accessEnc.setBool(false, edgeFlags, true);
         accessEnc.setBool(true, edgeFlags, true);
+
+        // set speed
+        avgSpeedEnc.setDecimal(false, edgeFlags, speed);
+        if (avgSpeedEnc.isStoreTwoDirections()) {
+            avgSpeedEnc.setDecimal(true, edgeFlags, speed);
+        }
+
+
         return edgeFlags;
     }
 }
