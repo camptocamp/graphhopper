@@ -15,4 +15,5 @@ then
   publish "${TAG}"
 else
   echo "Not deploying image, pass tag as parameter"
+  exit -1
 fi
