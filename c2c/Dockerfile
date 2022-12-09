@@ -24,6 +24,5 @@ RUN apt-get update \
 
 COPY --from=builder /graphhopper/web/target/graphhopper-web-*-SNAPSHOT.jar /graphhopper/web/target/graphhopper-web.jar
 WORKDIR /graphhopper
-COPY config.yml .
 
 EXPOSE 8989
