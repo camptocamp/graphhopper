@@ -28,17 +28,19 @@ import com.graphhopper.util.PMap;
  * @author Guillaume Beraudo
  */
 public class SchmFlagEncoder extends VehicleTagParser {
-
+    private final DecimalEncodedValue priorityWayEncoder;
     public SchmFlagEncoder(EncodedValueLookup lookup, PMap properties, String name) {
         this(
             lookup.getBooleanEncodedValue(VehicleAccess.key(properties.getString("name", name))),
             lookup.getDecimalEncodedValue(VehicleSpeed.key(properties.getString("name", name))),
+            lookup.getDecimalEncodedValue(VehiclePriority.key(properties.getString("name", name))),
             name
         );
     }
 
-    protected SchmFlagEncoder(BooleanEncodedValue accessEnc, DecimalEncodedValue speedEnc, String name) {
+    protected SchmFlagEncoder(BooleanEncodedValue accessEnc, DecimalEncodedValue speedEnc, DecimalEncodedValue priorityEnc, String name) {
         super(accessEnc, speedEnc, name, null, null, TransportationMode.FOOT, 100);
+        this.priorityWayEncoder = priorityEnc;
     }
 
     protected double getSpeed(ReaderWay way) {
@@ -68,6 +70,10 @@ public class SchmFlagEncoder extends VehicleTagParser {
             avgSpeedEnc.setDecimal(true, edgeFlags, speed);
         }
 
+        priorityWayEncoder.setDecimal(false, edgeFlags, 1.0);
+        if (priorityWayEncoder.isStoreTwoDirections()) {
+            priorityWayEncoder.setDecimal(true, edgeFlags, 1.0);
+        }
 
         return edgeFlags;
     }
