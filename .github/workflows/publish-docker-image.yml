@@ -1,0 +1,28 @@
+name: Publish Docker Image
+
+on:
+  push:
+    branches:
+      - 'camptocamp_*'
+      - 'release_*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build_and_publish:
+    if: github.repository_owner == 'camptocamp'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          file: c2c/Dockerfile
+          push: false
+          tags: ghcr.io/camptocamp/camptocamp/graphhopper:${{ github.ref_name }}
