@@ -24,5 +24,5 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           file: c2c/Dockerfile
-          push: false
+          push: true
           tags: ghcr.io/camptocamp/camptocamp/graphhopper:${{ github.ref_name }}
