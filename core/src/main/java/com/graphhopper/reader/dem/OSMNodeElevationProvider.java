@@ -28,7 +28,11 @@ public class OSMNodeElevationProvider implements ElevationProvider {
 
   @Override
   public double getEle(ReaderNode node) {
-    return Double.parseDouble(node.getTag("ele"));
+    String ele = node.getTag("ele");
+    if (ele == null) {
+      return Double.NaN;
+    }
+    return Double.parseDouble(ele);
   }
 
   @Override
