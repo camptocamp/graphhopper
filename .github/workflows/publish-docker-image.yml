@@ -25,4 +25,4 @@ jobs:
         with:
           file: c2c/Dockerfile
           push: true
-          tags: ghcr.io/camptocamp/camptocamp/graphhopper:${{ github.ref_name }}
+          tags: ghcr.io/camptocamp/graphhopper:${{ github.ref_name }}
