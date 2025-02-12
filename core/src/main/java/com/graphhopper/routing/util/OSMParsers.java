@@ -83,6 +83,8 @@ public class OSMParsers {
             return true;
         else if ("platform".equals(way.getTag("railway")))
             return true;
+        else if (way.getTag("land") != null)
+            return true;
         else
             return false;
     }
