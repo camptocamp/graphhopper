@@ -1,7 +1,7 @@
 {
   "priority": [
     { "if": "land == VELO || land == WANDER || land == MTB || land == SKATING",  "multiply_by": "10" },
-    { "else_if": "land == TLM", "multiply_by": "3" }
+    { "else_if": "land == TLM && ww", "multiply_by": "3" }
   ],
   "speed": [
     { "if": "true", "limit_to": "5.0" }
