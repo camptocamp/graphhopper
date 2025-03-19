@@ -6,6 +6,10 @@
       "multiply_by": "1"
     },
     {
+      "else_if": "ww",
+      "multiply_by": "8"
+    },
+    {
       "else_if": "objektart == M_4M_STRASSE || objektart == M_3M_STRASSE || objektart == M_1M_WEG || objektart == M_2M_WEG || objektart == M_1M_WEGFRAGMENT || objektart == M_2M_WEGFRAGMENT",
       "multiply_by": "3"
     }
