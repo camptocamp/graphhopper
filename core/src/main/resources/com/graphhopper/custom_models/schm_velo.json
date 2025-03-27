@@ -1,14 +1,22 @@
 {
-  "priority": [
-    { "if": "land == VELO", "multiply_by": "10" },
-    {
-      "else_if": "land != TLM",
-      "multiply_by": "1"
-    },
-    {
-      "else_if": "objektart == M_10M_STRASSE || objektart == M_8M_STRASSE || objektart == M_6M_STRASSE || objektart == M_4M_STRASSE",
-      "multiply_by": "3"
-    }
-  ],
-  "speed": [{ "if": "true", "limit_to": "5.0" }]
+    "priority": [
+        {
+            "if": "land == VELO",
+            "multiply_by": "1.0"
+        },
+        {
+            "else_if": "land != TLM",
+            "multiply_by": "0.1"
+        },
+        {
+            "else_if": "objektart == M_10M_STRASSE || objektart == M_8M_STRASSE || objektart == M_6M_STRASSE || objektart == M_4M_STRASSE",
+            "multiply_by": "0.3"
+        }
+    ],
+    "speed": [
+        {
+            "if": "true",
+            "limit_to": "100.0"
+        }
+    ]
 }
