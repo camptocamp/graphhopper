@@ -1,8 +1,18 @@
 {
-  "priority": [
-    { "if": "land == SKATING",  "multiply_by": "10" }
-  ],
-  "speed": [
-    { "if": "true", "limit_to": "5.0" }
-  ]
+    "priority": [
+        {
+            "if": "land == SKATING",
+            "multiply_by": "1.0"
+        },
+        {
+            "else": "",
+            "multiply_by": "0.1"
+        }
+    ],
+    "speed": [
+        {
+            "if": "true",
+            "limit_to": "100.0"
+        }
+    ]
 }
