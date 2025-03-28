@@ -1,15 +1,22 @@
 {
-  "priority": [
-    {
-      "if": "land != TLM",
-      "multiply_by": "1"
-    },
-    {
-      "else_if": "objektart == M_10M_STRASSE || objektart == M_8M_STRASSE || objektart == M_6M_STRASSE || objektart == M_4M_STRASSE || objektart == M_3M_STRASSE || objektart == M_1M_WEG || objektart == M_2M_WEG || objektart == M_1M_WEGFRAGMENT || objektart == M_2M_WEGFRAGMENT",
-      "multiply_by": "3"
-    }
-  ],
-  "speed": [
-    { "if": "true", "limit_to": "5.0" }
-  ]
+    "priority": [
+        {
+            "if": "land != TLM",
+            "multiply_by": "0.1"
+        },
+        {
+            "else_if": "objektart == M_10M_STRASSE || objektart == M_8M_STRASSE || objektart == M_6M_STRASSE || objektart == M_4M_STRASSE || objektart == M_3M_STRASSE || objektart == M_1M_WEG || objektart == M_2M_WEG || objektart == M_1M_WEGFRAGMENT || objektart == M_2M_WEGFRAGMENT",
+            "multiply_by": "1.0"
+        },
+        {
+            "else": "",
+            "multiply_by": "0.1"
+        }
+    ],
+    "speed": [
+        {
+            "if": "true",
+            "limit_to": "100.0"
+        }
+    ]
 }
