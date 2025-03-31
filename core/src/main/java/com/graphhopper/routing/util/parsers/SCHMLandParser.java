@@ -39,7 +39,9 @@ public class SCHMLandParser implements TagParser {
         if (schmLandTag == null)
             return;
         SCHMLand schmLand = SCHMLand.find(schmLandTag);
-        if (schmLand != OTHER)
+        if (schmLand != OTHER) {
             schmLandEnc.setEnum(false, edgeId, edgeIntAccess, schmLand);
+            schmLandEnc.setEnum(true, edgeId, edgeIntAccess, schmLand);
+        }
     }
 }
