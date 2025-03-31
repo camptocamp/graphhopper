@@ -26,5 +26,6 @@ public class SCHMWanderwegParser implements TagParser {
         String ww_tag = way.getTag("ww");
         boolean value = ww_tag != null && ww_tag.equals("1");
         wanderwegEnc.setBool(false, edgeId, edgeIntAccess, value);
+        wanderwegEnc.setBool(true, edgeId, edgeIntAccess, value);
     }
 }
