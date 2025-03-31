@@ -25,6 +25,6 @@ public class SCHMWanderwegParser implements TagParser {
     public void handleWayTags(int edgeId, EdgeIntAccess edgeIntAccess, ReaderWay way, IntsRef relationFlags) {
         String ww_tag = way.getTag("ww");
         boolean value = ww_tag != null && ww_tag.equals("1");
-        wanderwegEnc.setBool(value, edgeId, edgeIntAccess, true);
+        wanderwegEnc.setBool(false, edgeId, edgeIntAccess, value);
     }
 }
