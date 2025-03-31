@@ -25,6 +25,6 @@ public class SCHMWanderweg {
     public static final String KEY = "ww";
 
     public static BooleanEncodedValue create() {
-        return new SimpleBooleanEncodedValue(KEY, true);
+        return new SimpleBooleanEncodedValue(KEY, false);
     }
 }
