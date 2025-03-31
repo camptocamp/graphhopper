@@ -40,8 +40,12 @@ public class SCHMObjektartParser implements TagParser {
             return;
         SCHMObjektart schmObjektart = SCHMObjektart.find(schmObjektartTag);
         if (schmObjektart != OTHER) {
+            // NOTE: the set is done only for `reverse=false` (1st arg), because
+            // schmObjektart does not have the storeTwoDirections set to true. Otherwise, we
+            // would
+            // need to call this function again for reverse=true to store the value in the
+            // reverse direction.
             schmObjektartEnc.setEnum(false, edgeId, edgeIntAccess, schmObjektart);
-            schmObjektartEnc.setEnum(true, edgeId, edgeIntAccess, schmObjektart);
         }
     }
 }
