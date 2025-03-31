@@ -39,7 +39,9 @@ public class SCHMObjektartParser implements TagParser {
         if (schmObjektartTag == null)
             return;
         SCHMObjektart schmObjektart = SCHMObjektart.find(schmObjektartTag);
-        if (schmObjektart != OTHER)
+        if (schmObjektart != OTHER) {
             schmObjektartEnc.setEnum(false, edgeId, edgeIntAccess, schmObjektart);
+            schmObjektartEnc.setEnum(true, edgeId, edgeIntAccess, schmObjektart);
+        }
     }
 }
