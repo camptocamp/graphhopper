@@ -40,8 +40,11 @@ public class SCHMLandParser implements TagParser {
             return;
         SCHMLand schmLand = SCHMLand.find(schmLandTag);
         if (schmLand != OTHER) {
+            // NOTE: the set is done only for `reverse=false` (1st arg), because SchmLand
+            // does not have the storeTwoDirections set to true. Otherwise, we would need to
+            // call this function again for reverse=true to store the value in the reverse
+            // direction.
             schmLandEnc.setEnum(false, edgeId, edgeIntAccess, schmLand);
-            schmLandEnc.setEnum(true, edgeId, edgeIntAccess, schmLand);
         }
     }
 }
