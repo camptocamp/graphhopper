@@ -345,6 +345,16 @@ public class DefaultImportRegistry implements ImportRegistry {
                     (lookup, props) -> new SCHMWanderwegParser(
                             lookup.getBooleanEncodedValue(SCHMWanderweg.KEY))
             );
+        else if (SCHMStructure.KEY.equals(name))
+            return ImportUnit.create(name, props -> SCHMStructure.create(),
+                    (lookup, props) -> new SCHMStructureParser(
+                            lookup.getEnumEncodedValue(SCHMStructure.KEY, SCHMStructure.class))
+            );
+        else if (SCHMHikingCategory.KEY.equals(name))
+            return ImportUnit.create(name, props -> SCHMHikingCategory.create(),
+                    (lookup, props) -> new SCHMHikingCategoryParser(
+                            lookup.getEnumEncodedValue(SCHMHikingCategory.KEY, SCHMHikingCategory.class))
+            );
         return null;
     }
 }
