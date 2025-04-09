@@ -23,42 +23,34 @@ package com.graphhopper.routing.ev;
  * The values are taken from the SwissTLM specs:
  * https://www.swisstopo.admin.ch/de/landschaftsmodell-swisstlm3d
  */
-public enum SCHMObjektart {
-    OTHER("Other"),
-    AUSFAHRT("Ausfahrt"),
-    EINFAHRT("Einfahrt"),
-    AUTOBAHN("Autobahn"),
-    RASTSTAETTE("Raststaette"),
-    VERBINDUNG("Verbindung"),
-    ZUFAHRT("Zufahrt"),
-    DIENSTZUFAHRT("Dienstzufahrt"),
-    M_10M_STRASSE("10m Strasse"),
-    M_6M_STRASSE("6m Strasse"),
-    M_4M_STRASSE("4m Strasse"),
-    M_3M_STRASSE("3m Strasse"),
-    PLATZ("Platz"),
-    AUTOZUG("Autozug"),
-    FAEHRE("Faehre"),
-    M_2M_WEG("2m Weg"),
-    M_1M_WEG("1m Weg"),
-    M_1M_WEGFRAGMENT("1m Wegfragment"),
-    M_2M_WEGFRAGMENT("2m Wegfragment"),
-    MARKIERTE_SPUR("Markierte Spur"),
-    M_8M_STRASSE("8m Strasse"),
-    AUTOSTRASSE("Autostrasse"),
-    KLETTERSTEIG("Klettersteig"),
-    PROVISORIUM("Provisorium");
+public enum SCHMStructure {
+    KEINE("Keine"),
+    BRUECKE("Bruecke"),
+    BRUECKE_MIT_GALERIE("Bruecke mit Galerie"),
+    BRUECKE_MIT_TREPPE("Bruecke mit Treppe"),
+    FURT("Furt"),
+    GALERIE("Galerie"),
+    GEDECKTE_BRUECKE("Gedeckte Bruecke"),
+    IN_AUF_GEBAUEDE("in/auf Gebaeude"),
+    K_W("k_W"),
+    STAUDAMM("Staudamm"),
+    STAUMAUER_WEHR("Staumauer, Wehr"),
+    STEG("Steg"),
+    TREPPE("Treppe"),
+    TUNNEL("Tunnel"),
+    UNTERFUEHRUNG("Unterfuehrung"),
+    UNTERFUEHRUNG_MIT_TREPPE("Unterfuehrung mit Treppe");
 
     private final String label;
 
-    SCHMObjektart(String label) {
+    SCHMStructure(String label) {
         this.label = label;
     }
 
-    public static final String KEY = "objektart";
+    public static final String KEY = "structure";
 
-    public static EnumEncodedValue<SCHMObjektart> create() {
-        return new EnumEncodedValue<>(SCHMObjektart.KEY, SCHMObjektart.class);
+    public static EnumEncodedValue<SCHMStructure> create() {
+        return new EnumEncodedValue<>(SCHMStructure.KEY, SCHMStructure.class);
     }
 
     @Override
@@ -66,14 +58,14 @@ public enum SCHMObjektart {
         return this.label;
     }
 
-    public static SCHMObjektart find(String name) {
+    public static SCHMStructure find(String name) {
         if (name == null || name.isEmpty())
-            return OTHER;
-        for (SCHMObjektart obj : SCHMObjektart.values()) {
+            return KEINE;
+        for (SCHMStructure obj : SCHMStructure.values()) {
             if (obj.label.equals(name)) {
                 return obj;
             }
         }
-        return OTHER;
+        return KEINE;
     }
 }
