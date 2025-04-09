@@ -17,8 +17,6 @@
  */
 package com.graphhopper.routing.ev;
 
-import com.graphhopper.util.Helper;
-
 /**
  * This enum defines the Schweizmobil edge provenance.
  * All edges that do not fit get OTHER as value.
@@ -51,12 +49,12 @@ public enum SCHMObjektart {
     KLETTERSTEIG("Klettersteig"),
     PROVISORIUM("Provisorium");
 
-
     private final String label;
 
     SCHMObjektart(String label) {
         this.label = label;
     }
+
     public static final String KEY = "objektart";
 
     public static EnumEncodedValue<SCHMObjektart> create() {
