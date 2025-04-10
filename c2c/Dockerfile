@@ -8,10 +8,9 @@ COPY . /graphhopper/
 WORKDIR /graphhopper
 
 RUN mvn clean install -DskipTests
-# RUN mvn test -Dtest=SchmFlagEncoderTest#test* -DfailIfNoTests=false
 
 
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl openjdk-17-jre-headless \
   && apt-get clean \
