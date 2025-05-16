@@ -372,6 +372,11 @@ public class DefaultImportRegistry implements ImportRegistry {
                     (lookup, props) -> new SCHMHikingCategoryParser(
                             lookup.getEnumEncodedValue(SCHMHikingCategory.KEY, SCHMHikingCategory.class))
             );
+        else if (SCHMWidth.KEY.equals(name))
+            return ImportUnit.create(name, props -> SCHMWidth.create(),
+                    (lookup, props) -> new SCHMWidthParser(
+                            lookup.getDecimalEncodedValue(SCHMWidth.KEY))
+            );
         return null;
     }
 }
