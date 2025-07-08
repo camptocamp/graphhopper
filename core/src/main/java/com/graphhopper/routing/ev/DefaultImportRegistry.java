@@ -377,6 +377,11 @@ public class DefaultImportRegistry implements ImportRegistry {
                     (lookup, props) -> new SCHMWidthParser(
                             lookup.getDecimalEncodedValue(SCHMWidth.KEY))
             );
+        else if (SCHMNetwork.KEY.equals(name))
+            return ImportUnit.create(name, props -> SCHMNetwork.create(),
+                    (lookup, props) -> new SCHMNetworkParser(
+                            lookup.getEnumEncodedValue(SCHMNetwork.KEY, SCHMNetwork.class))
+            );
         return null;
     }
 }
