@@ -24,7 +24,17 @@ import com.graphhopper.util.Helper;
  * All edges that do not fit get OTHER as value.
  */
 public enum SCHMLand {
-    OTHER, TLM, WANDER, VELO, MTB, SKATING;
+    OTHER,
+    TLM,
+    WANDER,
+    VELO,
+    MTB,
+    SKATING,
+    KANU,
+    LANGLAUF,
+    SCHLITTELN,
+    SCHNEESCHUH,
+    WINTERWANDERN;
 
     public static final String KEY = "land";
 
