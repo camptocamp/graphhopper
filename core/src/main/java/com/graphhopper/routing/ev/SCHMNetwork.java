@@ -22,45 +22,34 @@ import com.graphhopper.util.Helper;
 /**
  * This enum defines the Schweizmobil edge provenance.
  * All edges that do not fit get OTHER as value.
+ * The values are taken from the SwissTLM specs:
+ * https://www.swisstopo.admin.ch/de/landschaftsmodell-swisstlm3d
  */
-public enum SCHMLand {
-    OTHER("other"),
-    TLM("tlm"),
-    HIKING("wander"),
-    BIKE("velo"),
-    MTB("mtb"),
-    SKATING("skating"),
-    CANOE("kanu"),
-    CROSSCOUNTRY("langlauf"),
-    SLEDGING("schlitteln"),
-    SNOWSHOE("schneeschuh"),
-    WINTERHIKING("winterwandern");
+public enum SCHMNetwork {
+    NONE,
+    HIKE,
+    WINTERHIKE,
+    SNOWSHOE,
+    CROSSCOUNTRY;
 
-    private final String label;
+    public static final String KEY = "network";
 
-    SCHMLand(String label) {
-        this.label = label;
-    }
-
-    public static final String KEY = "land";
-
-    public static EnumEncodedValue<SCHMLand> create() {
-        return new EnumEncodedValue<>(SCHMLand.KEY, SCHMLand.class);
+    public static EnumEncodedValue<SCHMNetwork> create() {
+        return new EnumEncodedValue<>(SCHMNetwork.KEY, SCHMNetwork.class);
     }
 
     @Override
     public String toString() {
-        return this.label;
+        return Helper.toLowerCase(super.toString());
     }
 
-    public static SCHMLand find(String name) {
+    public static SCHMNetwork find(String name) {
         if (name == null || name.isEmpty())
-            return OTHER;
-        for (SCHMLand land : SCHMLand.values()) {
-            if (land.label.equals(name)) {
-                return land;
-            }
+            return NONE;
+        try {
+            return SCHMNetwork.valueOf(Helper.toUpperCase(name));
+        } catch (IllegalArgumentException e) {
+            return NONE;
         }
-        return OTHER;
     }
 }
