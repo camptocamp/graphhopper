@@ -24,17 +24,23 @@ import com.graphhopper.util.Helper;
  * All edges that do not fit get OTHER as value.
  */
 public enum SCHMLand {
-    OTHER,
-    TLM,
-    WANDER,
-    VELO,
-    MTB,
-    SKATING,
-    KANU,
-    LANGLAUF,
-    SCHLITTELN,
-    SCHNEESCHUH,
-    WINTERWANDERN;
+    OTHER("other"),
+    TLM("tlm"),
+    HIKING("wander"),
+    BIKE("velo"),
+    MTB("mtb"),
+    SKATING("skating"),
+    CANOE("kanu"),
+    CROSSCOUNTRY("langlauf"),
+    SLEDGING("schlitteln"),
+    SNOWSHOE("schneeschuh"),
+    WINTERHIKING("winterwandern");
+
+    private final String label;
+
+    SCHMLand(String label) {
+        this.label = label;
+    }
 
     public static final String KEY = "land";
 
@@ -44,16 +50,17 @@ public enum SCHMLand {
 
     @Override
     public String toString() {
-        return Helper.toLowerCase(super.toString());
+        return this.label;
     }
 
     public static SCHMLand find(String name) {
         if (name == null || name.isEmpty())
             return OTHER;
-        try {
-            return SCHMLand.valueOf(Helper.toUpperCase(name));
-        } catch (IllegalArgumentException ex) {
-            return OTHER;
+        for (SCHMLand land : SCHMLand.values()) {
+            if (land.label.equals(name)) {
+                return land;
+            }
         }
+        return OTHER;
     }
 }
