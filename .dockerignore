@@ -1,3 +1,5 @@
 c2c/
-target/
+.github
+.gitignore
+**/target
 **/node_modules
